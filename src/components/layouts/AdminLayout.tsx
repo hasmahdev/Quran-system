@@ -80,14 +80,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div dir="rtl" className="flex h-screen bg-background text-text font-sans">
       {/* Mobile Sidebar */}
-      {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
-          <aside className="w-64 bg-card border-l border-border">
-            <SidebarContent isOpen={true} />
-          </aside>
-          <div onClick={() => setIsMobileSidebarOpen(false)} className="flex-1 bg-black/30 backdrop-blur-sm"></div>
-        </div>
-      )}
+      <div className={`md:hidden fixed inset-0 z-40 flex transition-opacity duration-300 ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <aside className={`w-64 bg-card border-l border-border rounded-l-2xl transition-transform duration-300 transform ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <SidebarContent isOpen={true} />
+        </aside>
+        <div onClick={() => setIsMobileSidebarOpen(false)} className="flex-1 bg-black/30 backdrop-blur-sm"></div>
+      </div>
 
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex md:flex-shrink-0 bg-card border-l border-border transition-all duration-300 ${isDesktopSidebarOpen ? 'w-64' : 'w-20'}`}>
