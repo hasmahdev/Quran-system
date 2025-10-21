@@ -12,6 +12,7 @@ export default function StudentDashboard() {
   const [name, setName] = useState('');
   const [surah, setSurah] = useState<number | null>(null);
   const [ayah, setAyah] = useState<number | null>(null);
+  const [page, setPage] = useState<number | null>(null);
 
   useEffect(() => {
     const id = typeof window !== 'undefined' ? localStorage.getItem('student_id') : null;
@@ -19,13 +20,14 @@ export default function StudentDashboard() {
     (async () => {
       const { data } = await supabase
         .from('students')
-        .select('name,progress_surah,progress_ayah')
+        .select('name,progress_surah,progress_ayah,progress_page')
         .eq('id', id)
         .single();
       if (data) {
         setName(data.name);
         setSurah(data.progress_surah);
         setAyah(data.progress_ayah);
+        setPage(data.progress_page);
       }
     })();
   }, []);
@@ -41,7 +43,7 @@ export default function StudentDashboard() {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-muted">{t('currentProgress')}:</span>
-            <span className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">{formatProgress(surah, ayah)}</span>
+            <span className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">{formatProgress(surah, ayah, page)}</span>
           </div>
         </div>
       </Card>

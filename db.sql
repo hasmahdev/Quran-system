@@ -2,9 +2,11 @@
 CREATE TABLE students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    phone TEXT,
     password_hash TEXT NOT NULL,
     progress_surah INTEGER,
-    progress_ayah INTEGER
+    progress_ayah INTEGER,
+    progress_page INTEGER
 );
 
 -- Create the admin_settings table

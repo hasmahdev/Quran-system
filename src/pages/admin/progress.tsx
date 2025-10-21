@@ -5,10 +5,11 @@ import { surahNames, formatProgress } from '../../utils/quran';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null };
+type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function ProgressPage() {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [formData, setFormData] = useState({ surah: 1, ayah: 1 });
+  const [formData, setFormData] = useState({ surah: 1, ayah: 1, page: 1 });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -26,7 +27,7 @@ export default function ProgressPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('students')
-      .select('id,name,progress_surah,progress_ayah')
+      .select('id,name,progress_surah,progress_ayah,progress_page')
       .order('name');
     if (error) setError(error.message);
     setStudents(data || []);
@@ -37,7 +38,7 @@ export default function ProgressPage() {
 
   const openModal = (student: Student) => {
     setEditingStudent(student);
-    setFormData({ surah: student.progress_surah || 1, ayah: student.progress_ayah || 1 });
+    setFormData({ surah: student.progress_surah || 1, ayah: student.progress_ayah || 1, page: student.progress_page || 1 });
     setIsModalOpen(true);
   };
 
@@ -56,7 +57,7 @@ export default function ProgressPage() {
     setError(null);
     setSuccess(false);
     try {
-      const { error } = await supabase.from('students').update({ progress_surah: formData.surah, progress_ayah: formData.ayah }).eq('id', editingStudent.id);
+      const { error } = await supabase.from('students').update({ progress_surah: formData.surah, progress_ayah: formData.ayah, progress_page: formData.page }).eq('id', editingStudent.id);
       if (error) throw error;
       await load();
       setSuccess(true);
@@ -74,21 +75,25 @@ export default function ProgressPage() {
       {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
       {success && <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-6">{t('progressSaved')}</div>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {students.map((student) => (
-          <Card key={student.id}>
-            <div className="flex justify-between items-start gap-2">
-              <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
-              <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
-                <Edit size={18} />
-              </button>
-            </div>
-            <div className="mt-2 text-sm text-muted">
-              {formatProgress(student.progress_surah, student.progress_ayah)}
-            </div>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {students.map((student) => (
+            <Card key={student.id}>
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
+                <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
+                  <Edit size={18} />
+                </button>
+              </div>
+              <div className="mt-2 text-sm text-muted">
+                {formatProgress(student.progress_surah, student.progress_ayah, student.progress_page)}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -108,6 +113,10 @@ export default function ProgressPage() {
           <div>
             <label htmlFor="ayah" className="block text-sm font-medium text-muted mb-2">{t('ayah')}</label>
             <input type="number" id="ayah" name="ayah" min={1} value={formData.ayah} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          </div>
+          <div>
+            <label htmlFor="page" className="block text-sm font-medium text-muted mb-2">{t('page')}</label>
+            <input type="number" id="page" name="page" min={1} value={formData.page} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
             <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
