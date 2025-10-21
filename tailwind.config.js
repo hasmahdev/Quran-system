@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Tajawal', 'sans-serif'],
+      },
       colors: {
         primary: "#1E9F93",
         background: "#F3F4F6", // light gray
