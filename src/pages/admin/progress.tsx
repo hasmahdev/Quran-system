@@ -22,6 +22,7 @@ export default function ProgressPage() {
   const [formData, setFormData] = useState({ surah: 1, ayah: 1, page: 1 });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   async function load() {
     setLoading(true);
@@ -72,6 +73,16 @@ export default function ProgressPage() {
     <AdminLayout>
       <h1 className="text-3xl font-bold text-text mb-8">{t('manageProgress')}</h1>
 
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder={t('searchStudent')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+
       {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
       {success && <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-6">{t('progressSaved')}</div>}
 
@@ -79,7 +90,7 @@ export default function ProgressPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {students.map((student) => (
+          {students.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
                 <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>

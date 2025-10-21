@@ -26,6 +26,7 @@ export default function StudentsPage() {
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   async function load() {
     setLoading(true);
@@ -120,13 +121,23 @@ export default function StudentsPage() {
         </button>
       </div>
 
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder={t('searchStudent')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+
       {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
 
       {loading ? (
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.map((student) => (
+          {items.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
                 <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>

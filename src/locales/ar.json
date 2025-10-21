@@ -28,5 +28,7 @@
   "phone": "رقم الهاتف",
   "addPhoneNumber": "إضافة رقم هاتف",
   "confirmAction": "هل أنت متأكد من هذا الإجراء؟",
-  "confirm": "تأكيد"
+  "confirm": "تأكيد",
+  "page": "الصفحة",
+  "searchStudent": "البحث عن طالب"
 }
