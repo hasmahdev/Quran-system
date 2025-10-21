@@ -10,6 +10,7 @@ export default function UIButton({ className, variant = 'primary', ...props }: P
     <button
       className={clsx(
         'btn',
+        'flex items-center justify-center',
         variant === 'primary' ? 'btn-primary' : 'btn-outline',
         'transition-transform duration-200 ease-in-out active:scale-95',
         className
