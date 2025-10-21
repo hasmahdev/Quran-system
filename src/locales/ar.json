@@ -24,5 +24,9 @@
   "unexpectedError": "حدث خطأ غير متوقع",
   "loading": "جاري التحميل...",
   "studentDashboard": "لوحة الطالب",
-  "currentProgress": "التقدم الحالي"
+  "currentProgress": "التقدم الحالي",
+  "phone": "رقم الهاتف",
+  "addPhoneNumber": "إضافة رقم هاتف",
+  "confirmAction": "هل أنت متأكد من هذا الإجراء؟",
+  "confirm": "تأكيد"
 }

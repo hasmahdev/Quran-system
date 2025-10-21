@@ -1,8 +1,10 @@
 import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
+import { useTranslation } from 'react-i18next';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; message: string; }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -15,13 +17,13 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
             onClick={onClose}
             className="flex-1 bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={onConfirm}
             className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
           >
-            Delete
+            {t('confirm')}
           </button>
         </div>
       </div>

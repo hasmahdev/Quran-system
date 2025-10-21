@@ -38,7 +38,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-text mb-2">{t('login')}</h1>
-        <p className="text-muted mb-6">{t('loginDescription')}</p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>
