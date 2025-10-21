@@ -45,6 +45,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         <div className={`flex items-center gap-3 transition-all duration-300 ${!isOpen ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
           <span className="text-lg font-bold whitespace-nowrap text-text">{t('adminPanel')}</span>
         </div>
+        <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className="text-muted hover:text-primary">
+          <PanelLeft className="h-5 w-5" />
+        </button>
       </div>
 
       <nav className="flex-grow px-2">
@@ -62,10 +65,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="px-2 py-4 mt-auto">
         <div className="border-t border-border pt-4 space-y-2">
-          <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-muted hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
-            <PanelLeft className={`h-5 w-5 ${isOpen ? 'ml-3' : ''}`} />
-            <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{t('toggleSidebar')}</span>
-          </button>
           <button onClick={handleLogout} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-muted hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
             <LogOut className={`h-5 w-5 ${isOpen ? 'ml-3' : ''}`} />
             <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{t('logout')}</span>
