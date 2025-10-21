@@ -1,10 +1,11 @@
 import { FormEvent, useState } from 'react';
-import UIButton from '../components/ui/Button';
-import UIInput from '../components/ui/Input';
-import UILabel from '../components/ui/Label';
 import { loginWithPassword } from '../utils/auth';
+import Card from '../components/ui/Card';
+import PasswordInput from '../components/ui/PasswordInput';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export default function LoginPage() {
     try {
       const res = await loginWithPassword(password);
       if (!res) {
-        setError('كلمة المرور غير صحيحة');
+        setError(t('incorrectPassword'));
       } else if (res.role === 'admin') {
         window.location.href = '/admin/students';
       } else {
@@ -24,9 +25,9 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       if (err?.message?.includes('Supabase env')) {
-        setError('يرجى إعداد مفاتيح Supabase (NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY).');
+        setError(t('supabaseError'));
       } else {
-        setError('حدث خطأ غير متوقع');
+        setError(t('unexpectedError'));
       }
     } finally {
       setLoading(false);
@@ -34,26 +35,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="card w-full max-w-md">
-        <div className="card-header">
-          <h1 className="card-title">تسجيل الدخول</h1>
-          <p className="text-sm text-gray-500 mt-1">أدخل كلمة المرور للدخول كمسؤول أو كطالب</p>
-        </div>
-        <div className="card-content">
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <UILabel htmlFor="password">كلمة المرور</UILabel>
-              <UIInput id="password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••" required />
-            </div>
-            {error && <div className="text-red-600 text-sm">{error}</div>}
-            <UIButton type="submit" disabled={loading} className="w-full">{loading? 'جاري الدخول...' : 'دخول'}</UIButton>
-            <div className="text-xs text-gray-500">
-              اللون الرئيسي: <span className="badge badge-primary">#1E9F93</span>
-            </div>
-          </form>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-md">
+        <h1 className="text-2xl font-bold text-text mb-2">{t('login')}</h1>
+        <p className="text-muted mb-6">{t('loginDescription')}</p>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>
+            <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+          </div>
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary text-white font-bold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all duration-200"
+          >
+            {loading ? t('loading') : t('login')}
+          </button>
+        </form>
+      </Card>
     </div>
   );
 }

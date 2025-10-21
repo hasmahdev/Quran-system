@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStudentGuard } from '../../hooks/useAuthProtected';
 import { getSupabase } from '../../lib/supabaseClient';
 import { formatProgress } from '../../utils/quran';
+import Card from '../../components/ui/Card';
+import { useTranslation } from 'react-i18next';
 
 export default function StudentDashboard() {
+  const { t } = useTranslation();
   useStudentGuard();
   const supabase = useMemo(() => getSupabase(), []);
   const [name, setName] = useState('');
@@ -28,16 +31,20 @@ export default function StudentDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="card w-full max-w-xl">
-        <div className="card-header">
-          <h1 className="card-title">لوحة الطالب</h1>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-xl">
+        <h1 className="text-2xl font-bold text-text mb-6">{t('studentDashboard')}</h1>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-muted">{t('name')}:</span>
+            <span className="font-semibold text-text">{name}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-muted">{t('currentProgress')}:</span>
+            <span className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">{formatProgress(surah, ayah)}</span>
+          </div>
         </div>
-        <div className="card-content space-y-2">
-          <div><span className="text-gray-600">الاسم: </span><span className="font-semibold">{name}</span></div>
-          <div><span className="text-gray-600">الموضع الحالي: </span><span className="badge badge-primary">{formatProgress(surah, ayah)}</span></div>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 }

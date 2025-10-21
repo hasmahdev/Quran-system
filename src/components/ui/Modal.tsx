@@ -10,7 +10,7 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-3xl' }: { i
       onClick={onClose}
     >
       <div
-        className={`bg-card border border-border rounded-20 shadow-card w-full ${maxWidth} m-auto flex flex-col max-h-[90vh] animate-modal-in`}
+        className={`bg-card border border-border rounded-20 w-full ${maxWidth} m-auto flex flex-col max-h-[90vh] animate-modal-in`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-shrink-0 flex justify-between items-center p-6 border-b border-border">
