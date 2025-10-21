@@ -41,9 +41,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const SidebarContent = ({ isOpen }: { isOpen: boolean }) => (
     <div className="flex flex-col h-full">
-      <div className={`flex items-center p-4 mb-4 border-b border-border ${isOpen ? 'justify-between' : 'justify-center'}`}>
-        <div className={`flex items-center gap-3 transition-all duration-300 ${!isOpen ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
-        </div>
+      <div className={`flex items-center p-4 mb-4 ${isOpen ? 'justify-end' : 'justify-center'}`}>
         <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className="text-muted hover:text-primary">
           <PanelLeft className="h-5 w-5" />
         </button>
@@ -88,7 +86,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
         </header>
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 animate-fade-in-up">
+          <div className="p-4 animate-fade-in-up">
             {children}
           </div>
         </main>
