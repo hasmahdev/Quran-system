@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'react-i18next';
 import { Users, BarChart, LogOut, PanelLeft, Menu, Home } from 'lucide-react';
 import { logout } from '../../utils/auth';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -26,22 +28,22 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navLinks = [
-    { to: '/admin/students', text: 'Students', icon: Users },
-    { to: '/admin/progress', text: 'Progress', icon: BarChart },
+    { to: '/admin/students', text: t('students'), icon: Users },
+    { to: '/admin/progress', text: t('progress'), icon: BarChart },
   ];
 
   const getNavLinkClasses = (isOpen: boolean) => (to: string) => {
     const isActive = router.pathname === to;
     return `flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-      isActive ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-primary/5 hover:text-primary'
+      isActive ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-primary/5 hover:text-primary'
     } ${!isOpen ? 'justify-center' : ''}`;
   };
 
   const SidebarContent = ({ isOpen }: { isOpen: boolean }) => (
     <div className="flex flex-col h-full">
-      <div className={`flex items-center justify-between p-4 mb-4 border-b border-gray-700/50`}>
+      <div className={`flex items-center justify-between p-4 mb-4 border-b border-border`}>
         <div className={`flex items-center gap-3 transition-all duration-300 ${!isOpen ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
-          <span className="text-lg font-bold whitespace-nowrap">Admin Panel</span>
+          <span className="text-lg font-bold whitespace-nowrap text-text">{t('adminPanel')}</span>
         </div>
       </div>
 
@@ -59,14 +61,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       <div className="px-2 py-4 mt-auto">
-        <div className="border-t border-gray-700 pt-4 space-y-2">
-          <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-gray-400 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
+        <div className="border-t border-border pt-4 space-y-2">
+          <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-muted hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
             <PanelLeft className={`h-5 w-5 ${isOpen ? 'ml-3' : ''}`} />
-            <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>Toggle Sidebar</span>
+            <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{t('toggleSidebar')}</span>
           </button>
-          <button onClick={handleLogout} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-gray-400 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
+          <button onClick={handleLogout} className={`flex items-center w-full px-4 py-2.5 text-sm font-medium text-muted hover:bg-primary/5 hover:text-primary rounded-lg transition-colors duration-200 ${!isOpen ? 'justify-center' : ''}`}>
             <LogOut className={`h-5 w-5 ${isOpen ? 'ml-3' : ''}`} />
-            <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>Logout</span>
+            <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{t('logout')}</span>
           </button>
         </div>
       </div>
@@ -74,16 +76,16 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
-    <div dir="rtl" className="flex h-screen bg-gray-900 text-white font-sans">
+    <div dir="rtl" className="flex h-screen bg-background text-text font-sans">
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex md:flex-shrink-0 bg-black/20 border-l border-gray-700 transition-all duration-300 ${isDesktopSidebarOpen ? 'w-64' : 'w-20'}`}>
+      <aside className={`hidden md:flex md:flex-shrink-0 bg-card border-l border-border transition-all duration-300 ${isDesktopSidebarOpen ? 'w-64' : 'w-20'}`}>
         <SidebarContent isOpen={isDesktopSidebarOpen} />
       </aside>
 
       {/* Main Content */}
       <div className="flex flex-col flex-1">
-        <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700 p-4 flex items-center md:hidden">
-          <button onClick={() => setIsMobileSidebarOpen(true)} className="text-white">
+        <header className="sticky top-0 bg-background/80 backdrop-blur-lg border-b border-border p-4 flex items-center md:hidden">
+          <button onClick={() => setIsMobileSidebarOpen(true)} className="text-text">
             <Menu size={24} />
           </button>
         </header>

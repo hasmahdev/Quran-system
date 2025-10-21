@@ -1,0 +1,20 @@
+{
+  "students": "الطلاب",
+  "progress": "التقدم",
+  "addStudent": "إضافة طالب",
+  "editStudent": "تعديل طالب",
+  "deleteStudent": "حذف طالب",
+  "confirmDelete": "هل أنت متأكد من حذف هذا الطالب؟",
+  "name": "الاسم",
+  "password": "كلمة المرور",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "logout": "تسجيل الخروج",
+  "toggleSidebar": "تبديل الشريط الجانبي",
+  "adminPanel": "لوحة التحكم",
+  "manageProgress": "إدارة التقدم",
+  "progressSaved": "تم حفظ التقدم بنجاح!",
+  "editProgressFor": "تعديل التقدم لـ",
+  "surah": "السورة",
+  "ayah": "الآية"
+}
