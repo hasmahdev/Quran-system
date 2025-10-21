@@ -42,7 +42,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const SidebarContent = ({ isOpen }: { isOpen: boolean }) => (
     <div className="flex flex-col h-full">
       <div className={`flex items-center p-4 mb-4 ${isOpen ? 'justify-end' : 'justify-center'}`}>
-        <button onClick={() => setIsDesktopSidebarOpen(!isOpen)} className="text-muted hover:text-primary">
+        <button onClick={() => {
+          if (isMobileSidebarOpen) {
+            setIsMobileSidebarOpen(false);
+          } else {
+            setIsDesktopSidebarOpen(!isOpen);
+          }
+        }} className="text-muted hover:text-primary">
           <PanelLeft className="h-5 w-5" />
         </button>
       </div>
@@ -73,6 +79,16 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div dir="rtl" className="flex h-screen bg-background text-text font-sans">
+      {/* Mobile Sidebar */}
+      {isMobileSidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          <aside className="w-64 bg-card border-l border-border">
+            <SidebarContent isOpen={true} />
+          </aside>
+          <div onClick={() => setIsMobileSidebarOpen(false)} className="flex-1 bg-black/30 backdrop-blur-sm"></div>
+        </div>
+      )}
+
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex md:flex-shrink-0 bg-card border-l border-border transition-all duration-300 ${isDesktopSidebarOpen ? 'w-64' : 'w-20'}`}>
         <SidebarContent isOpen={isDesktopSidebarOpen} />
