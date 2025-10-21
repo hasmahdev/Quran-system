@@ -109,11 +109,11 @@ export default function ProgressPage() {
             <label htmlFor="ayah" className="block text-sm font-medium text-muted mb-2">{t('ayah')}</label>
             <input type="number" id="ayah" name="ayah" min={1} value={formData.ayah} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
-          <div className="flex justify-end gap-4 pt-4">
-            <button type="button" onClick={closeModal} className="bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
+            <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
             <button
               type="submit"
-              className="bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
+              className="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
             >
               {t('save')}
             </button>

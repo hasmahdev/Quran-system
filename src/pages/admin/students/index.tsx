@@ -104,11 +104,11 @@ export default function StudentsPage() {
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-text">{t('students')}</h1>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 bg-primary text-white font-bold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all duration-200 transform active:scale-95"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all duration-200 transform active:scale-95"
         >
           <Plus size={20} /> {t('addStudent')}
         </button>
@@ -152,11 +152,11 @@ export default function StudentsPage() {
             <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>
             <PasswordInput id="password" name="password" value={formData.password} onChange={handleFormChange} required={!editingStudent} />
           </div>
-          <div className="flex justify-end gap-4 pt-4">
-            <button type="button" onClick={closeModal} className="bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
+            <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
             <button
               type="submit"
-              className="bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
+              className="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
             >
               {t('save')}
             </button>
