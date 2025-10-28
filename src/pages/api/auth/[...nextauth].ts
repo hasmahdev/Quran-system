@@ -16,19 +16,20 @@ export default NextAuth({
           return null;
         }
 
-        const supabase = getSupabase();
+        try {
+          const supabase = getSupabase();
 
-        // Fetch user from your custom users table
-        const { data: user, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('username', credentials.username)
-          .single();
+          // Fetch user from your custom users table
+          const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', credentials.username)
+            .single();
 
-        if (error || !user) {
-          console.error('Error fetching user:', error);
-          return null;
-        }
+          if (error || !user) {
+            console.error('Error fetching user:', error);
+            return null;
+          }
 
         // Compare the provided password with the stored hash
         const isValid = await bcrypt.compare(credentials.password, user.password_hash);
@@ -39,6 +40,9 @@ export default NextAuth({
         } else {
           return null;
         }
+      } catch (e) {
+        console.error('Database connection error', e);
+        return null;
       }
     })
   ],

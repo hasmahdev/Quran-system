@@ -1,8 +1,10 @@
 {
   "login": "تسجيل الدخول",
   "password": "كلمة المرور",
+  "username": "اسم المستخدم",
+  "email": "البريد الإلكتروني",
   "loading": "جار التحميل...",
-  "incorrectCredentials": "بيانات الاعتماد غير صحيحة.",
+  "incorrectCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة",
   "supabaseError": "خطأ في تهيئة Supabase. يرجى التحقق من متغيرات البيئة.",
   "unexpectedError": "حدث خطأ غير متوقع.",
   "students": "الطلاب",
