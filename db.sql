@@ -1,30 +1,26 @@
--- Drop existing tables if they exist to start fresh
-DROP TABLE IF EXISTS students;
-DROP TABLE IF EXISTS admin_settings;
+-- Drop existing tables in reverse order of creation to handle dependencies
+DROP TABLE IF EXISTS progress;
+DROP TABLE IF EXISTS class_members;
+DROP TABLE IF EXISTS classes;
 
--- Create the users table to handle all roles
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('developer', 'admin', 'user', 'teacher', 'student'))
-);
-
--- Create the classes table, linked to a teacher
+-- Create the classes table, linked to a teacher.
+-- The teacher_id now correctly references the user's profile ID.
 CREATE TABLE classes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    teacher_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE
+    teacher_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE
 );
 
--- Create the class_members join table to link students to classes
+-- Create the class_members join table to link students to classes.
+-- The student_id now correctly references the user's profile ID.
 CREATE TABLE class_members (
     class_id UUID NOT NULL REFERENCES public.classes(id) ON DELETE CASCADE,
-    student_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     PRIMARY KEY (class_id, student_id)
 );
 
--- Create the progress table to track student progress within a class context
+-- Create the progress table to track student progress.
+-- The updated_by field now correctly references the user's profile ID.
 CREATE TABLE progress (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     class_member_class_id UUID NOT NULL,
@@ -33,9 +29,11 @@ CREATE TABLE progress (
     ayah INTEGER,
     page INTEGER,
     updated_at TIMESTAMPTZ DEFAULT now(),
-    updated_by UUID NOT NULL REFERENCES public.users(id), -- Teacher who updated it
+    updated_by UUID NOT NULL REFERENCES public.profiles(id), -- Teacher who updated it
     FOREIGN KEY (class_member_class_id, class_member_student_id) REFERENCES public.class_members(class_id, student_id) ON DELETE CASCADE
 );
 
--- Insert a default developer user for initial setup
-INSERT INTO users (full_name, password_hash, role) VALUES ('Default Developer', '$2a$10$x9gUeP0cFIE53BGeqJsdBeA6xtCbHgpima4HrKOiXOpEWQDKE4h7a', 'developer');
+-- Note: The `public.users` table has been removed. User management is now handled
+-- by Supabase Auth (`auth.users`) and the `public.profiles` table, which is
+-- created and managed via the migration file.
+-- Default users should be created via the application's sign-up process.
