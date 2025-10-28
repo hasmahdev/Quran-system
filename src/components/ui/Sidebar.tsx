@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { logout } from '../../utils/auth';
+import { signOut } from 'next-auth/react';
 
 const links = [
   { href: '/admin/students', label: 'الطلاب' },
@@ -24,7 +24,7 @@ export default function Sidebar() {
       </nav>
       <div className="p-3 border-t">
         <button
-          onClick={() => { logout(); router.replace('/login'); }}
+          onClick={() => signOut({ callbackUrl: '/login' })}
           className="btn btn-outline w-full"
         >تسجيل الخروج</button>
       </div>

@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
 import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList } from 'lucide-react';
-import { logout, getUserRole } from '../../utils/auth';
+import { useSession, signOut } from 'next-auth/react';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: session } = useSession();
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [navLinks, setNavLinks] = useState<any[]>([]);
@@ -24,7 +25,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   }, [isMobileSidebarOpen]);
 
   useEffect(() => {
-    const role = getUserRole();
+    const role = (session?.user as any)?.role;
     if (role === 'developer') {
       setNavLinks([
         { to: '/Developer/Teachers', text: t('teachers'), icon: Users },
@@ -35,14 +36,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     } else if (role === 'teacher') {
       setNavLinks([
         { to: '/Teacher/MyClasses', text: t('my_classes'), icon: BookCopy },
-        { to: 'src/pages/Teacher/MyProgress.tsx', text: t('student_progress'), icon: ClipboardList },
+        { to: '/Teacher/MyProgress', text: t('student_progress'), icon: ClipboardList },
       ]);
     }
-  }, [t]);
+  }, [t, session]);
 
   const handleLogout = () => {
-    logout();
-    router.push('/login');
+    signOut({ callbackUrl: '/login' });
   };
 
   const getNavLinkClasses = (isOpen: boolean) => (to: string) => {

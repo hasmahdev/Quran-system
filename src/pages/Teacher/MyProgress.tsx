@@ -1,26 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClassesByTeacher, getStudentsInClass, getProgressForClass, updateStudentProgress } from '../../lib/api';
-import { getUserId } from '../../utils/auth';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 const MyProgressPage = () => {
   const { t } = useTranslation();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [students, setStudents] = useState<any[]>([]);
   const [progress, setProgress] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const teacherId = getUserId();
+  const teacherId = (session?.user as any)?.id;
 
   useEffect(() => {
-    if (teacherId) {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+    if (status === 'authenticated' && teacherId) {
       const fetchClasses = async () => {
         const classData = await getClassesByTeacher(teacherId);
         setClasses(classData);
       };
       fetchClasses();
     }
-  }, [teacherId]);
+  }, [teacherId, status, router]);
 
   useEffect(() => {
     if (selectedClassId) {

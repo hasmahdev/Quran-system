@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useStudentGuard } from '../../hooks/useAuthProtected';
 import { getSupabase } from '../../lib/supabaseClient';
 import { formatProgress } from '../../utils/quran';
 import Card from '../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 export default function StudentDashboard() {
   const { t } = useTranslation();
-  useStudentGuard();
   const supabase = useMemo(() => getSupabase(), []);
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [surah, setSurah] = useState<number | null>(null);
   const [ayah, setAyah] = useState<number | null>(null);
@@ -17,26 +19,31 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = typeof window !== 'undefined' ? localStorage.getItem('student_id') : null;
-    if (!id) return;
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('students')
-          .select('name,progress_surah,progress_ayah,progress_page')
-          .eq('id', id)
-          .single();
-        if (data) {
-          setName(data.name);
-          setSurah(data.progress_surah);
-          setAyah(data.progress_ayah);
-          setPage(data.progress_page);
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+    if (status === 'authenticated') {
+      const id = (session.user as any)?.id;
+      if (!id) return;
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from('users')
+            .select('username,progress_surah,progress_ayah,progress_page')
+            .eq('id', id)
+            .single();
+          if (data) {
+            setName(data.username);
+            setSurah(data.progress_surah);
+            setAyah(data.progress_ayah);
+            setPage(data.progress_page);
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+      })();
+    }
+  }, [status, session]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">

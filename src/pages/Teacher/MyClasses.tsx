@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../lib/api';
-import { getUserId } from '../../utils/auth';
+import { useSession } from 'next-auth/react';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -10,6 +10,7 @@ import ConfirmationModal from '../../components/ui/ConfirmationModal';
 const MyClassesPage = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,11 +18,13 @@ const MyClassesPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [formData, setFormData] = useState({ name: '' });
-  const teacherId = getUserId();
+  const teacherId = (session?.user as any)?.id;
 
-  const fetchClasses = async () => {
+  const fetchClasses = useCallback(async () => {
     if (!teacherId) {
-      setError("Teacher ID not found. Please log in again.");
+      if (status === 'authenticated') {
+        setError("Teacher ID not found. Please log in again.");
+      }
       setLoading(false);
       return;
     }
@@ -34,11 +37,15 @@ const MyClassesPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [teacherId, status, t]);
 
   useEffect(() => {
-    fetchClasses();
-  }, [t, teacherId]);
+    if (status === 'authenticated') {
+      fetchClasses();
+    } else if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router, fetchClasses]);
 
   const handleOpenModal = (cls: any | null = null) => {
     setSelectedClass(cls);
