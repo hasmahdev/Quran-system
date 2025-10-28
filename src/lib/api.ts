@@ -10,7 +10,9 @@ export const getUsersByRole = async (role: string) => {
 
 export const createUser = async (userData: any) => {
   const supabase = getSupabase();
-  const { data, error } = await supabase.from('users').insert([userData]).select();
+  const { data, error } = await supabase.functions.invoke('create-user', {
+    body: userData,
+  });
   if (error) throw error;
   return data;
 };

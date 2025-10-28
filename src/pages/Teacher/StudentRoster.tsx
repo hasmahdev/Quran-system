@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
-import bcrypt from 'bcryptjs';
 import { getStudentsInClass, removeStudentFromClass, createUser, addStudentToClass } from '../../lib/api';
 import { Plus, Trash2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
@@ -57,12 +56,9 @@ const StudentRosterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const userData: any = { ...formData, role: 'student' };
-      const salt = await bcrypt.genSalt(10);
-      userData.password_hash = await bcrypt.hash(formData.password, salt);
-      delete userData.password;
-
+      const userData = { ...formData, role: 'student' };
       const newUser = await createUser(userData);
+
       if (newUser && newUser.length > 0) {
         await addStudentToClass(classId as string, newUser[0].id);
       }

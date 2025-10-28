@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import bcrypt from 'bcryptjs';
 import { getUsersByRole, createUser, updateUser, deleteUser } from '../../lib/api';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
@@ -61,15 +60,12 @@ const TeachersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const userData: any = { ...formData, role: 'teacher' };
-      if (formData.password) {
-        const salt = await bcrypt.genSalt(10);
-        userData.password_hash = await bcrypt.hash(formData.password, salt);
-      }
-      delete userData.password; // remove plain password
+      const userData = { ...formData, role: 'teacher' };
 
       if (selectedTeacher) {
-        await updateUser(selectedTeacher.id, userData);
+        // Hashing on update is not handled in this simplified example.
+        // A full implementation would require a separate Edge Function.
+        await updateUser(selectedTeacher.id, { full_name: userData.full_name });
       } else {
         await createUser(userData);
       }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import bcrypt from 'bcryptjs';
 import { getUsersByRole, getClasses, createUser, updateUser, deleteUser, addStudentToClass, removeStudentFromClass } from '../../lib/api';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
@@ -68,15 +67,10 @@ const StudentsPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const userData: any = { ...formData, role: 'student' };
-      if (formData.password) {
-        const salt = await bcrypt.genSalt(10);
-        userData.password_hash = await bcrypt.hash(formData.password, salt);
-      }
-      delete userData.password;
+      const userData = { ...formData, role: 'student' };
 
       if (selectedStudent) {
-        await updateUser(selectedStudent.id, userData);
+        await updateUser(selectedStudent.id, { full_name: userData.full_name });
       } else {
         await createUser(userData);
       }

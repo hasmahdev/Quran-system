@@ -1,36 +1,30 @@
-import bcrypt from 'bcryptjs';
 import { getSupabase } from '../lib/supabaseClient';
 
 export type LoginResult = {
   role: 'developer' | 'teacher' | 'student';
-  userId: string;
-  fullName: string;
+  id: string;
+  full_name: string;
 };
 
 export async function loginWithPassword(password: string): Promise<LoginResult | null> {
   const supabase = getSupabase();
 
-  // Fetch all users
-  const { data: users, error } = await supabase
-    .from('users')
-    .select('id, password_hash, role, full_name');
+  const { data, error } = await supabase.functions.invoke('login', {
+    body: { password },
+  });
 
-  if (error || !users) {
-    console.error('Error fetching users:', error);
+  if (error) {
+    console.error('Error calling login function:', error);
     return null;
   }
 
-  // Iterate through users to find a matching password
-  for (const user of users) {
-    const ok = await bcrypt.compare(password, user.password_hash);
-    if (ok) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_role', user.role);
-        localStorage.setItem('user_id', user.id);
-        localStorage.setItem('user_name', user.full_name);
-      }
-      return { role: user.role, userId: user.id, fullName: user.full_name };
+  if (data) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_role', data.role);
+      localStorage.setItem('user_id', data.id);
+      localStorage.setItem('user_name', data.full_name);
     }
+    return data;
   }
 
   return null;
