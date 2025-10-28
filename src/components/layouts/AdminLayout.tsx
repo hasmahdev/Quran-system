@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
-import { Users, BarChart, LogOut, PanelLeft, Menu, Home } from 'lucide-react';
-import { logout } from '../../utils/auth';
+import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList } from 'lucide-react';
+import { logout, getUserRole } from '../../utils/auth';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [navLinks, setNavLinks] = useState<any[]>([]);
 
   useEffect(() => {
     setIsMobileSidebarOpen(false);
@@ -22,15 +23,27 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     };
   }, [isMobileSidebarOpen]);
 
+  useEffect(() => {
+    const role = getUserRole();
+    if (role === 'developer') {
+      setNavLinks([
+        { to: '/Developer/Teachers', text: t('teachers'), icon: Users },
+        { to: '/Developer/Classes', text: t('classes'), icon: BookCopy },
+        { to: '/Developer/Students', text: t('students'), icon: Users },
+        { to: '/Developer/Progress', text: t('progress'), icon: BarChart },
+      ]);
+    } else if (role === 'teacher') {
+      setNavLinks([
+        { to: '/Teacher/MyClasses', text: t('my_classes'), icon: BookCopy },
+        { to: 'src/pages/Teacher/MyProgress.tsx', text: t('student_progress'), icon: ClipboardList },
+      ]);
+    }
+  }, [t]);
+
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
-
-  const navLinks = [
-    { to: '/admin/students', text: t('students'), icon: Users },
-    { to: '/admin/progress', text: t('progress'), icon: BarChart },
-  ];
 
   const getNavLinkClasses = (isOpen: boolean) => (to: string) => {
     const isActive = router.pathname === to;

@@ -49,6 +49,11 @@ export function requireStudent(): string | null {
   return localStorage.getItem('student_id');
 }
 
+export function getUserRole(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('auth_role');
+}
+
 export function logout() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('auth_role');
