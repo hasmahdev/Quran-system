@@ -39,5 +39,4 @@ CREATE TABLE progress (
 );
 
 -- Insert a default developer user for initial setup
--- You should replace 'your_hashed_password_here' with an actual hashed password during deployment
-INSERT INTO users (full_name, username, password_hash, role) VALUES ('Default Developer', 'developer', 'your_hashed_password_here', 'developer');
+INSERT INTO users (full_name, username, password_hash, role) VALUES ('Default Developer', 'developer', '$2a$10$x9gUeP0cFIE53BGeqJsdBeA6xtCbHgpima4HrKOiXOpEWQDKE4h7a', 'developer');

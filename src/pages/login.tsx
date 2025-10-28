@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,12 +16,15 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await loginWithPassword(password);
+      const res = await loginWithPassword(username, password);
       if (!res) {
-        setError(t('incorrectPassword'));
-      } else if (res.role === 'admin') {
-        window.location.href = '/admin/students';
+        setError(t('incorrectCredentials'));
+      } else if (res.role === 'developer') {
+        window.location.href = '/Developer/Teachers';
+      } else if (res.role === 'teacher') {
+        window.location.href = '/Teacher/MyClasses';
       } else {
+        // Assuming 'student' is the other role
         window.location.href = '/student/dashboard';
       }
     } catch (err: any) {
@@ -39,6 +43,18 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-text mb-2">{t('login')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-muted mb-2">{t('username')}</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm"
+              placeholder={t('username')}
+              required
+            />
+          </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>
             <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />

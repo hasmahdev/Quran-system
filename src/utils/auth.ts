@@ -1,52 +1,50 @@
 import bcrypt from 'bcryptjs';
 import { getSupabase } from '../lib/supabaseClient';
 
-export type LoginResult =
-  | { role: 'admin' }
-  | { role: 'student'; studentId: string; name: string };
+export type LoginResult = {
+  role: 'developer' | 'teacher' | 'student';
+  userId: string;
+  fullName: string;
+};
 
-export async function loginWithPassword(password: string): Promise<LoginResult | null> {
+export async function loginWithPassword(username: string, password: string): Promise<LoginResult | null> {
   const supabase = getSupabase();
-  // Check admin
-  const { data: adminRows, error: adminErr } = await supabase
-    .from('admin_settings')
-    .select('password_hash')
+
+  // Find user by username
+  const { data: users, error } = await supabase
+    .from('users')
+    .select('id, password_hash, role, full_name')
+    .eq('username', username)
     .limit(1);
-  if (!adminErr && adminRows && adminRows.length > 0) {
-    const ok = await bcrypt.compare(password, adminRows[0].password_hash);
-    if (ok) {
-      if (typeof window !== 'undefined') localStorage.setItem('auth_role', 'admin');
-      return { role: 'admin' };
-    }
+
+  if (error || !users || users.length === 0) {
+    console.error('Error fetching user or user not found:', error);
+    return null;
   }
-  // Check students
-  const { data: students, error: studErr } = await supabase
-    .from('students')
-    .select('id,name,password_hash')
-    .order('name');
-  if (!studErr && students) {
-    for (const s of students) {
-      const ok = await bcrypt.compare(password, s.password_hash);
-      if (ok) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_role', 'student');
-          localStorage.setItem('student_id', s.id);
-        }
-        return { role: 'student', studentId: s.id, name: s.name };
-      }
+
+  const user = users[0];
+  const ok = await bcrypt.compare(password, user.password_hash);
+
+  if (ok) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_role', user.role);
+      localStorage.setItem('user_id', user.id);
+      localStorage.setItem('user_name', user.full_name);
     }
+    return { role: user.role, userId: user.id, fullName: user.full_name };
   }
+
   return null;
 }
 
-export function requireAdmin(): boolean {
+export function requireRole(role: string): boolean {
   if (typeof window === 'undefined') return false;
-  return localStorage.getItem('auth_role') === 'admin';
+  return localStorage.getItem('auth_role') === role;
 }
 
-export function requireStudent(): string | null {
+export function getUserId(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('student_id');
+  return localStorage.getItem('user_id');
 }
 
 export function getUserRole(): string | null {
@@ -57,5 +55,6 @@ export function getUserRole(): string | null {
 export function logout() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('auth_role');
-  localStorage.removeItem('student_id');
+  localStorage.removeItem('user_id');
+  localStorage.removeItem('user_name');
 }
