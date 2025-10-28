@@ -7,31 +7,30 @@ export type LoginResult = {
   fullName: string;
 };
 
-export async function loginWithPassword(username: string, password: string): Promise<LoginResult | null> {
+export async function loginWithPassword(password: string): Promise<LoginResult | null> {
   const supabase = getSupabase();
 
-  // Find user by username
+  // Fetch all users
   const { data: users, error } = await supabase
     .from('users')
-    .select('id, password_hash, role, full_name')
-    .eq('username', username)
-    .limit(1);
+    .select('id, password_hash, role, full_name');
 
-  if (error || !users || users.length === 0) {
-    console.error('Error fetching user or user not found:', error);
+  if (error || !users) {
+    console.error('Error fetching users:', error);
     return null;
   }
 
-  const user = users[0];
-  const ok = await bcrypt.compare(password, user.password_hash);
-
-  if (ok) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_role', user.role);
-      localStorage.setItem('user_id', user.id);
-      localStorage.setItem('user_name', user.full_name);
+  // Iterate through users to find a matching password
+  for (const user of users) {
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (ok) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_role', user.role);
+        localStorage.setItem('user_id', user.id);
+        localStorage.setItem('user_name', user.full_name);
+      }
+      return { role: user.role, userId: user.id, fullName: user.full_name };
     }
-    return { role: user.role, userId: user.id, fullName: user.full_name };
   }
 
   return null;

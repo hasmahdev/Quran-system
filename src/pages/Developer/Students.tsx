@@ -16,7 +16,7 @@ const StudentsPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', username: '', password: '' });
+  const [formData, setFormData] = useState({ full_name: '', password: '' });
   const [classIdToAssign, setClassIdToAssign] = useState('');
 
   const fetchData = async () => {
@@ -40,7 +40,7 @@ const StudentsPage = () => {
   // CRUD Modal Handlers
   const handleOpenModal = (student: any | null = null) => {
     setSelectedStudent(student);
-    setFormData(student ? { full_name: student.full_name, username: student.username, password: '' } : { full_name: '', username: '', password: '' });
+    setFormData(student ? { full_name: student.full_name, password: '' } : { full_name: '', password: '' });
     setIsModalOpen(true);
   };
   const handleCloseModal = () => setIsModalOpen(false);
@@ -130,7 +130,6 @@ const StudentsPage = () => {
           <thead>
             <tr className="border-b">
               <th className="text-right p-2">{t('full_name')}</th>
-              <th className="text-right p-2">{t('username')}</th>
               <th className="text-right p-2">{t('actions')}</th>
             </tr>
           </thead>
@@ -138,7 +137,6 @@ const StudentsPage = () => {
             {students.map((student) => (
               <tr key={student.id} className="border-b">
                 <td className="p-2">{student.full_name}</td>
-                <td className="p-2">{student.username}</td>
                 <td className="p-2 flex justify-end space-x-2">
                   <button onClick={() => handleOpenAssignModal(student)} className="text-xs bg-blue-500 text-white py-1 px-2 rounded">{t('assign_to_class')}</button>
                   <button onClick={() => handleOpenModal(student)}><Edit size={20} /></button>
@@ -158,10 +156,6 @@ const StudentsPage = () => {
             <div>
               <label htmlFor="full_name">{t('full_name')}</label>
               <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label htmlFor="username">{t('username')}</label>
-              <input type="text" name="username" value={formData.username} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
             </div>
             <div>
               <label htmlFor="password">{t('password')} ({selectedStudent ? t('leave_blank_to_keep') : t('required')})</label>

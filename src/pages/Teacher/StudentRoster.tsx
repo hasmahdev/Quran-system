@@ -17,7 +17,7 @@ const StudentRosterPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', username: '', password: '' });
+  const [formData, setFormData] = useState({ full_name: '', password: '' });
 
   const fetchStudents = async () => {
     if (classId) {
@@ -104,7 +104,6 @@ const StudentRosterPage = () => {
           <thead>
             <tr className="border-b">
               <th className="text-right p-2">{t('full_name')}</th>
-              <th className="text-right p-2">{t('username')}</th>
               <th className="text-right p-2">{t('actions')}</th>
             </tr>
           </thead>
@@ -112,7 +111,6 @@ const StudentRosterPage = () => {
             {students.map((student) => (
               <tr key={student.id} className="border-b">
                 <td className="p-2">{student.full_name}</td>
-                <td className="p-2">{student.username}</td>
                 <td className="p-2 flex justify-end">
                   <button onClick={() => handleOpenConfirm(student)}><Trash2 size={20} /></button>
                 </td>
@@ -129,10 +127,6 @@ const StudentRosterPage = () => {
             <div>
               <label htmlFor="full_name">{t('full_name')}</label>
               <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label htmlFor="username">{t('username')}</label>
-              <input type="text" name="username" value={formData.username} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
             </div>
             <div>
               <label htmlFor="password">{t('password')}</label>

@@ -6,7 +6,6 @@ DROP TABLE IF EXISTS admin_settings;
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name TEXT NOT NULL,
-    username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('developer', 'admin', 'user', 'teacher', 'student'))
 );
@@ -39,4 +38,4 @@ CREATE TABLE progress (
 );
 
 -- Insert a default developer user for initial setup
-INSERT INTO users (full_name, username, password_hash, role) VALUES ('Default Developer', 'developer', '$2a$10$x9gUeP0cFIE53BGeqJsdBeA6xtCbHgpima4HrKOiXOpEWQDKE4h7a', 'developer');
+INSERT INTO users (full_name, password_hash, role) VALUES ('Default Developer', '$2a$10$x9gUeP0cFIE53BGeqJsdBeA6xtCbHgpima4HrKOiXOpEWQDKE4h7a', 'developer');
