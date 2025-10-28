@@ -44,8 +44,9 @@ export default NextAuth({
         console.error('Database connection error', e);
         return null;
       }
-    })
-  ],
+    }
+  })
+],
   session: {
     strategy: 'jwt',
   },
