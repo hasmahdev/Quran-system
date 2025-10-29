@@ -1,32 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClassesByTeacher, getStudentsInClass, getProgressForClass, updateStudentProgress } from '../../lib/api';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../../context/AuthContext';
+import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/router';
+
+interface DecodedToken {
+  id: string;
+  role: string;
+  exp: number;
+}
 
 const MyProgressPage = () => {
   const { t } = useTranslation();
-  const { data: session, status } = useSession();
+  const { token } = useAuth();
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [students, setStudents] = useState<any[]>([]);
   const [progress, setProgress] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const teacherId = (session?.user as any)?.id;
+  const [teacherId, setTeacherId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<DecodedToken>(token);
+        setTeacherId(decodedToken.id);
+      } catch (error) {
+        console.error('Invalid token:', error);
+        router.push('/login');
+      }
+    } else {
       router.push('/login');
     }
-    if (status === 'authenticated' && teacherId) {
+  }, [token, router]);
+
+  useEffect(() => {
+    if (teacherId) {
       const fetchClasses = async () => {
         const classData = await getClassesByTeacher(teacherId);
         setClasses(classData);
       };
       fetchClasses();
     }
-  }, [teacherId, status, router]);
+  }, [teacherId]);
 
   useEffect(() => {
     if (selectedClassId) {

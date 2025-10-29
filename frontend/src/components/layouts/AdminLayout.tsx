@@ -3,12 +3,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
 import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '../../context/AuthContext';
+import { jwtDecode } from 'jwt-decode';
+
+interface DecodedToken {
+  id: number;
+  role: string;
+  exp: number;
+}
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { token, setToken } = useAuth();
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [navLinks, setNavLinks] = useState<any[]>([]);
@@ -25,24 +32,36 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   }, [isMobileSidebarOpen]);
 
   useEffect(() => {
-    const role = (session?.user as any)?.role;
-    if (role === 'developer') {
-      setNavLinks([
-        { to: '/Developer/Teachers', text: t('teachers'), icon: Users },
-        { to: '/Developer/Classes', text: t('classes'), icon: BookCopy },
-        { to: '/Developer/Students', text: t('students'), icon: Users },
-        { to: '/Developer/Progress', text: t('progress'), icon: BarChart },
-      ]);
-    } else if (role === 'teacher') {
-      setNavLinks([
-        { to: '/Teacher/MyClasses', text: t('my_classes'), icon: BookCopy },
-        { to: '/Teacher/MyProgress', text: t('student_progress'), icon: ClipboardList },
-      ]);
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<DecodedToken>(token);
+        const role = decodedToken.role;
+        if (role === 'developer') {
+          setNavLinks([
+            { to: '/Developer/Teachers', text: t('teachers'), icon: Users },
+            { to: '/Developer/Classes', text: t('classes'), icon: BookCopy },
+            { to: '/Developer/Students', text: t('students'), icon: Users },
+            { to: '/Developer/Progress', text: t('progress'), icon: BarChart },
+          ]);
+        } else if (role === 'teacher') {
+          setNavLinks([
+            { to: '/Teacher/MyClasses', text: t('my_classes'), icon: BookCopy },
+            { to: '/Teacher/MyProgress', text: t('student_progress'), icon: ClipboardList },
+          ]);
+        }
+      } catch (error) {
+        console.error('Invalid token:', error);
+        setToken(null);
+        router.push('/login');
+      }
+    } else {
+        router.push('/login');
     }
-  }, [t, session]);
+  }, [t, token, router, setToken]);
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/login' });
+    setToken(null);
+    router.push('/login');
   };
 
   const getNavLinkClasses = (isOpen: boolean) => (to: string) => {

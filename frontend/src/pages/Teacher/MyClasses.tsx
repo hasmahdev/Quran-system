@@ -2,15 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../lib/api';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../../context/AuthContext';
+import { jwtDecode } from 'jwt-decode';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
+interface DecodedToken {
+  id: string;
+  role: string;
+  exp: number;
+}
+
 const MyClassesPage = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { token } = useAuth();
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,14 +25,24 @@ const MyClassesPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [formData, setFormData] = useState({ name: '' });
-  const teacherId = (session?.user as any)?.id;
+  const [teacherId, setTeacherId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<DecodedToken>(token);
+        setTeacherId(decodedToken.id);
+      } catch (error) {
+        console.error('Invalid token:', error);
+        router.push('/login');
+      }
+    } else {
+      router.push('/login');
+    }
+  }, [token, router]);
 
   const fetchClasses = useCallback(async () => {
     if (!teacherId) {
-      if (status === 'authenticated') {
-        setError("Teacher ID not found. Please log in again.");
-      }
-      setLoading(false);
       return;
     }
     setLoading(true);
@@ -37,15 +54,13 @@ const MyClassesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [teacherId, status, t]);
+  }, [teacherId, t]);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (teacherId) {
       fetchClasses();
-    } else if (status === 'unauthenticated') {
-      router.push('/login');
     }
-  }, [status, router, fetchClasses]);
+  }, [teacherId, fetchClasses]);
 
   const handleOpenModal = (cls: any | null = null) => {
     setSelectedClass(cls);
@@ -62,6 +77,7 @@ const MyClassesPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!teacherId) return;
     try {
       if (selectedClass) {
         await updateClass(selectedClass.id, formData);

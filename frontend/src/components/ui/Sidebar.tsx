@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { signOut } from 'next-auth/react';
+import { useAuth } from '../../context/AuthContext';
 
 const links = [
   { href: '/admin/students', label: 'الطلاب' },
@@ -9,6 +9,13 @@ const links = [
 
 export default function Sidebar() {
   const router = useRouter();
+  const { setToken } = useAuth();
+
+  const handleLogout = () => {
+    setToken(null);
+    router.push('/login');
+  };
+
   return (
     <aside className="h-screen w-64 bg-white border-l border-gray-200 fixed left-0 top-0 flex flex-col">
       <div className="px-4 py-5 border-b">
@@ -24,7 +31,7 @@ export default function Sidebar() {
       </nav>
       <div className="p-3 border-t">
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={handleLogout}
           className="btn btn-outline w-full"
         >تسجيل الخروج</button>
       </div>

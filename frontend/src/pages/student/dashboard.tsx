@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getSupabase } from '../../lib/supabaseClient';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { formatProgress } from '../../utils/quran';
 import Card from '../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { getMyData } from '../../lib/api';
 
 export default function StudentDashboard() {
   const { t } = useTranslation();
-  const supabase = useMemo(() => getSupabase(), []);
-  const { data: session, status } = useSession();
+  const { token } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
   const [surah, setSurah] = useState<number | null>(null);
@@ -19,31 +18,28 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!token) {
       router.push('/login');
+      return;
     }
-    if (status === 'authenticated') {
-      const id = (session.user as any)?.id;
-      if (!id) return;
-      (async () => {
-        try {
-          const { data } = await supabase
-            .from('users')
-            .select('username,progress_surah,progress_ayah,progress_page')
-            .eq('id', id)
-            .single();
-          if (data) {
-            setName(data.username);
-            setSurah(data.progress_surah);
-            setAyah(data.progress_ayah);
-            setPage(data.progress_page);
-          }
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-  }, [status, session]);
+
+    const fetchData = async () => {
+      try {
+        const data = await getMyData();
+        setName(data.username);
+        setSurah(data.progress_surah);
+        setAyah(data.progress_ayah);
+        setPage(data.progress_page);
+      } catch (error) {
+        console.error("Failed to fetch student data:", error);
+        // Handle error, e.g., show an error message
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [token, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">

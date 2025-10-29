@@ -3,7 +3,7 @@ import Card from '../components/ui/Card';
 import PasswordInput from '../components/ui/PasswordInput';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
-import { signIn } from 'next-auth/react';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -12,25 +12,27 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { setToken } = useAuth();
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        username: username,
-        password: password,
+      const response = await fetch('https://qu.ghars.site/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
       });
 
-      if (result?.error) {
-        setError(t('incorrectCredentials'));
-      } else if (result?.ok) {
-        // On successful sign-in, NextAuth sets the session cookie.
-        // We can then redirect to the home page, which will handle the
-        // role-based redirect.
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.token);
         router.push('/');
+      } else {
+        setError(t('incorrectCredentials'));
       }
     } catch (err: any) {
       setError(t('unexpectedError'));

@@ -2,9 +2,9 @@ import type { AppProps } from 'next/app';
 import '../styles/globals.css';
 import { useEffect } from 'react';
 import '../lib/i18n';
-import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '../context/AuthContext';
 
-export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = 'ar';
@@ -12,8 +12,8 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     }
   }, []);
   return (
-    <SessionProvider session={session}>
+    <AuthProvider>
       <Component {...pageProps} />
-    </SessionProvider>
+    </AuthProvider>
   );
 }
