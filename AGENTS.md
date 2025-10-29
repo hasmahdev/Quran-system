@@ -37,3 +37,12 @@ Update all the functions infrontend/src/lib/api.tsto make requests to the new Go
 5. Verification
 Before submitting the final changes, perform the following checks:
 Frontend Build:Ensure the Next.js application builds successfully by runningnpm run buildfrom within thefrontenddirectory.Backend Server:Ensure the Go backend server can be started without errors by runninggo run main.gofrom within thebackenddirectory.
+
+6. Docker Deployment
+The backend can be deployed using Docker.
+
+Build the Docker image:
+docker build -t go-backend ./backend
+
+Run the Docker container:
+docker run -p 3001:3001 --env-file .env go-backend

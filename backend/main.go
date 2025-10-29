@@ -352,7 +352,7 @@ func removeClassStudent(c *fiber.Ctx) error {
 	}
 
 	_, err = db.Exec(context.Background(), "DELETE FROM class_members WHERE class_id=$1 AND student_id=$2", classId, studentId)
-	if err != nil {.
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
