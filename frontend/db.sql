@@ -18,7 +18,7 @@ CREATE TABLE users (
 
 -- Insert the default developer user with the password "admins1"
 INSERT INTO users (username, password, role) VALUES
-('developer', '$2a$12$K/7czCYgzNGHX0kQSIk/tOLNS3XfPigInKLzgLJO76MP7RmCGyHK6', 'developer');
+('developer', '$2a$10$Vk5cjiLPNYzNT3UZPfpqJuzHFz0EWC1bHrsao61LiCeTCWy18XdLq', 'developer');
 
 -- Create the classes table, linked to a teacher by their integer ID
 CREATE TABLE classes (
