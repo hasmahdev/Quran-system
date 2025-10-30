@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.0",
