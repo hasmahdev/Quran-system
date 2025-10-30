@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getProgressForClass, updateStudentProgress, getStudentsInClass } from '../../../lib/api';
+import { getProgressForClass, updateStudentProgress, getStudentsInClass, getClassesByTeacher } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/router';
