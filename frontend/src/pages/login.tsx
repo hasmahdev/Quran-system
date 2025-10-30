@@ -30,7 +30,30 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         setToken(data.token);
-        router.push('/');
+        // The enhanced AuthContext now decodes the token, but we need to decode it here too
+        // to get the role immediately for redirection.
+        try {
+          const { jwtDecode } = await import('jwt-decode');
+          const decoded: { role: string } = jwtDecode(data.token);
+
+          switch (decoded.role) {
+            case 'developer':
+              router.push('/Developer');
+              break;
+            case 'teacher':
+              router.push('/Teacher');
+              break;
+            case 'student':
+              router.push('/student');
+              break;
+            default:
+              router.push('/');
+          }
+        } catch (e) {
+          console.error("Failed to decode token for redirect", e);
+          router.push('/');
+        }
+
       } else {
         const errorData = await response.json().catch(() => response.text());
         console.error('Login failed with status:', response.status, 'Response:', errorData);
