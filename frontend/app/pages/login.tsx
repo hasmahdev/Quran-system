@@ -32,9 +32,12 @@ export default function LoginPage() {
         setToken(data.token);
         router.push('/');
       } else {
+        const errorData = await response.json().catch(() => response.text());
+        console.error('Login failed with status:', response.status, 'Response:', errorData);
         setError(t('incorrectCredentials'));
       }
     } catch (err: any) {
+      console.error('An unexpected error occurred during login:', err);
       setError(t('unexpectedError'));
     } finally {
       setLoading(false);
