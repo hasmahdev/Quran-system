@@ -25,7 +25,8 @@ export const getUsersByRole = async (role: string) => {
   const response = await fetch(`${API_URL}/users?role=${role}`, {
     headers: getAuthHeaders(),
   });
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  return data || [];
 };
 
 export const createUser = async (userData: any) => {
@@ -109,7 +110,8 @@ export const getClasses = async () => {
     const response = await fetch(`${API_URL}/classes`, {
         headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    const data = await handleResponse(response);
+    return data || [];
 };
 
 export const getClassesByTeacher = async (teacherId: string) => {
