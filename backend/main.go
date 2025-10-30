@@ -47,6 +47,7 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
 	}))
 	app.Use(logger.New())
 
@@ -99,15 +100,21 @@ func loginHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
+	log.Printf("Login attempt for user: %s", req.Username)
+
 	var user User
 	err := db.QueryRow(context.Background(), "SELECT id, username, password, role FROM users WHERE username=$1", req.Username).Scan(&user.ID, &user.Username, &user.Password, &user.Role)
 	if err != nil {
+		log.Printf("User lookup failed for '%s': %v", req.Username, err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
+	log.Printf("User '%s' found in database.", req.Username)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		log.Printf("Password comparison failed for user '%s': %v", req.Username, err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
+	log.Printf("Password for user '%s' is correct.", req.Username)
 
 	claims := jwt.MapClaims{
 		"id":   user.ID,
@@ -118,8 +125,10 @@ func loginHandler(c *fiber.Ctx) error {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString(jwtSecret)
 	if err != nil {
+		log.Printf("Token generation failed for user '%s': %v", req.Username, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not log in"})
 	}
+	log.Printf("Token generated successfully for user '%s'.", req.Username)
 
 	return c.JSON(fiber.Map{"token": t})
 }
