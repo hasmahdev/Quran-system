@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, getClassesByTeacher, getProgressForClass, updateStudentProgress, getStudentsInClass } from '../../lib/api';
+import { getUsersByRole, getClassesByTeacher, getProgressForClass, updateStudentProgress, getStudentsInClass } from '../../../lib/api';
 
 const ProgressPage = () => {
   const { t } = useTranslation();

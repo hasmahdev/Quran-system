@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { formatProgress } from '../../utils/quran';
-import Card from '../../components/ui/Card';
+import { useAuth } from '../../../context/AuthContext';
+import { formatProgress } from '../../../utils/quran';
+import Card from '../../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { useRouter } from 'next/router';
-import { getMyData } from '../../lib/api';
+import { getMyData } from '../../../lib/api';
 
 export default function StudentDashboard() {
   const { t } = useTranslation();

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, createUser, updateUser, deleteUser } from '../../lib/api';
+import { getUsersByRole, createUser, updateUser, deleteUser } from '../../../lib/api';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import Modal from '../../components/ui/Modal';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import Modal from '../../../components/ui/Modal';
+import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 
 const TeachersPage = () => {
   const { t } = useTranslation();

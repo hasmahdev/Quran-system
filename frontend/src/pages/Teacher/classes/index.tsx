@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
-import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../lib/api';
-import { useAuth } from '../../context/AuthContext';
+import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../../lib/api';
+import { useAuth } from '../../../context/AuthContext';
 import { jwtDecode } from 'jwt-decode';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
-import Modal from '../../components/ui/Modal';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import Modal from '../../../components/ui/Modal';
+import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 
 interface DecodedToken {
   id: string;
