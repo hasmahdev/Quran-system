@@ -27,8 +27,8 @@ WORKDIR /root/
 # Copy the pre-built binary file from the previous stage
 COPY --from=builder /main .
 
-# Expose port 3001 to the outside world
-EXPOSE 3001
+# Expose port 3002 to the outside world
+EXPOSE 3002
 
 # Command to run the executable
 CMD ["./main"]
