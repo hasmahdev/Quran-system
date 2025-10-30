@@ -38,10 +38,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         const role = decodedToken.role;
         if (role === 'developer') {
           setNavLinks([
-            { to: '/Developer/Teachers', text: t('teachers'), icon: Users },
-            { to: '/Developer/Classes', text: t('classes'), icon: BookCopy },
-            { to: '/Developer/Students', text: t('students'), icon: Users },
-            { to: '/Developer/Progress', text: t('progress'), icon: BarChart },
+            { to: '/Developer/teachers', text: t('teachers'), icon: Users },
+            { to: '/Developer/classes', text: t('classes'), icon: BookCopy },
+            { to: '/Developer/students', text: t('students'), icon: Users },
+            { to: '/Developer/progress', text: t('progress'), icon: BarChart },
           ]);
         } else if (role === 'teacher') {
           setNavLinks([
