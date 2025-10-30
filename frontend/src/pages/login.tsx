@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle } from 'lucide-react';
+import jwtDecode from 'jwt-decode';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -36,7 +37,6 @@ export default function LoginPage() {
 
         setTimeout(() => {
           try {
-            const { jwtDecode } = require('jwt-decode');
             const decoded: { role: string } = jwtDecode(data.token);
 
             switch (decoded.role) {
