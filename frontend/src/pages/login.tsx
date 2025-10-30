@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle } from 'lucide-react';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export default function LoginPage() {
   const { t } = useTranslation();

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
 import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 interface DecodedToken {
   id: number;
