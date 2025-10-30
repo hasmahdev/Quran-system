@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"
@@ -43,6 +44,10 @@ func main() {
 
 	app := fiber.New()
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://quran.ghars.site",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 	app.Use(logger.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
