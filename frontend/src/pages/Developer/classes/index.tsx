@@ -4,6 +4,7 @@ import { getClasses, getUsersByRole, createClass, updateClass, deleteClass } fro
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
+import AdminLayout from '../../../components/layouts/AdminLayout';
 
 const ClassesPage = () => {
   const { t } = useTranslation();
@@ -91,9 +92,10 @@ const ClassesPage = () => {
   if (error) return <div className="text-red-600">{error}</div>;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{t('class_management')}</h1>
+    <AdminLayout>
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">{t('class_management')}</h1>
         <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
           <Plus size={20} className="mr-2" />
           {t('add_class')}
@@ -155,6 +157,7 @@ const ClassesPage = () => {
         message={t('are_you_sure_delete_class')}
       />
     </div>
+    </AdminLayout>
   );
 };
 

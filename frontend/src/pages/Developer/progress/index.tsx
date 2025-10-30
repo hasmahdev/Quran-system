@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getUsersByRole, getClassesByTeacher, getProgressForClass, updateStudentProgress, getStudentsInClass } from '../../../lib/api';
+import AdminLayout from '../../../components/layouts/AdminLayout';
 
 const ProgressPage = () => {
   const { t } = useTranslation();
@@ -64,9 +65,10 @@ const ProgressPage = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">{t('progress_overview')}</h1>
-      <div className="flex space-x-4 mb-4">
+    <AdminLayout>
+      <div>
+        <h1 className="text-2xl font-bold mb-4">{t('progress_overview')}</h1>
+        <div className="flex space-x-4 mb-4">
         <select onChange={(e) => setSelectedTeacherId(e.target.value)} defaultValue="" className="bg-input border border-border rounded-lg px-3 py-2 text-sm">
           <option value="" disabled>{t('select_teacher')}</option>
           {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
@@ -104,6 +106,7 @@ const ProgressPage = () => {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 };
 
