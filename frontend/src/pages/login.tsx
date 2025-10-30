@@ -4,6 +4,7 @@ import PasswordInput from '../components/ui/PasswordInput';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
+import { CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
   const { setToken } = useAuth();
 
@@ -30,29 +32,31 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         setToken(data.token);
-        // The enhanced AuthContext now decodes the token, but we need to decode it here too
-        // to get the role immediately for redirection.
-        try {
-          const { jwtDecode } = await import('jwt-decode');
-          const decoded: { role: string } = jwtDecode(data.token);
+        setSuccess(true);
 
-          switch (decoded.role) {
-            case 'developer':
-              router.push('/Developer');
-              break;
-            case 'teacher':
-              router.push('/Teacher');
-              break;
-            case 'student':
-              router.push('/student');
-              break;
-            default:
-              router.push('/');
+        setTimeout(() => {
+          try {
+            const { jwtDecode } = require('jwt-decode');
+            const decoded: { role: string } = jwtDecode(data.token);
+
+            switch (decoded.role) {
+              case 'developer':
+                router.push('/Developer');
+                break;
+              case 'teacher':
+                router.push('/Teacher');
+                break;
+              case 'student':
+                router.push('/student');
+                break;
+              default:
+                router.push('/');
+            }
+          } catch (e) {
+            console.error("Failed to decode token for redirect", e);
+            router.push('/');
           }
-        } catch (e) {
-          console.error("Failed to decode token for redirect", e);
-          router.push('/');
-        }
+        }, 1000); // Wait 1 second for animation before redirect
 
       } else {
         const errorData = await response.json().catch(() => response.text());
@@ -69,7 +73,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-md">
+      <Card className={`w-full max-w-md transition-all duration-500 ${success ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
         <h1 className="text-2xl font-bold text-text mb-2">{t('login')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
@@ -91,10 +95,16 @@ export default function LoginPage() {
           {error && <div className="text-red-600 text-sm">{error}</div>}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white font-bold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all duration-200"
+            disabled={loading || success}
+            className={`w-full text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-300 ${success ? 'bg-green-500' : 'bg-primary hover:bg-opacity-90'}`}
           >
-            {loading ? t('loading') : t('login')}
+            {success ? (
+              <span className="flex items-center justify-center">
+                <CheckCircle className="mr-2" /> {t('success')}
+              </span>
+            ) : (
+              loading ? t('loading') : t('login')
+            )}
           </button>
         </form>
       </Card>
