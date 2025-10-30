@@ -34,7 +34,7 @@ var (
 )
 
 func main() {
-	connStr := os.Getenv("DATABASE_URL")
+	connStr := os.Getenv("DATABASE_URL") + "?statement_cache_mode=describe"
 	var err error
 	db, err = pgx.Connect(context.Background(), connStr)
 	if err != nil {
