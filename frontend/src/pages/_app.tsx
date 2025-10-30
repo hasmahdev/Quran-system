@@ -3,6 +3,7 @@ import '../styles/globals.css';
 import { useEffect } from 'react';
 import '../lib/i18n';
 import { AuthProvider } from '../context/AuthContext';
+import ErrorBoundary from '../components/debug/ErrorBoundary';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
@@ -11,9 +12,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       document.documentElement.dir = 'rtl';
     }
   }, []);
+
   return (
     <AuthProvider>
-      <Component {...pageProps} />
+      <ErrorBoundary>
+        <Component {...pageProps} />
+      </ErrorBoundary>
     </AuthProvider>
   );
 }
