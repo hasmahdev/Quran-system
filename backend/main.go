@@ -18,13 +18,7 @@ import (
 
 type User struct {
 	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
-}
-
-type CreateUserRequest struct {
-	FullName string `json:"full_name"`
+	Username string `json:"full_name"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
 }
@@ -160,21 +154,16 @@ func getUsers(c *fiber.Ctx) error {
 }
 
 func createUser(c *fiber.Ctx) error {
-	var req CreateUserRequest
-	if err := c.BodyParser(&req); err != nil {
+	var user User
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to hash password"})
 	}
-
-	user := User{
-		Username: req.FullName,
-		Password: string(hashedPassword),
-		Role:     req.Role,
-	}
+	user.Password = string(hashedPassword)
 
 	_, err = db.Exec(context.Background(), "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", user.Username, user.Password, user.Role)
 	if err != nil {
