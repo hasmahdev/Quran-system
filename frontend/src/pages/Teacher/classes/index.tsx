@@ -28,7 +28,7 @@ const MyClassesPage = () => {
     setLoading(true);
     try {
       const data = await getClassesByTeacher(String(user.id));
-      setClasses(data);
+      setClasses(data || []);
     } catch (err) {
       setError(t('error_fetching_classes'));
     } finally {

@@ -26,7 +26,7 @@ const StudentRosterPage = () => {
       setLoading(true);
       try {
         const data = await getStudentsInClass(classId as string);
-        setStudents(data);
+        setStudents(data || []);
       } catch (err) {
         setError(t('error_fetching_students'));
       } finally {
