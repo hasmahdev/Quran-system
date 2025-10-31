@@ -46,8 +46,8 @@ const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading
           ]);
         } else if (role === 'teacher') {
           setNavLinks([
-            { to: '/Teacher/MyClasses', text: t('my_classes'), icon: BookCopy },
-            { to: '/Teacher/MyProgress', text: t('student_progress'), icon: ClipboardList },
+            { to: '/Teacher/classes', text: t('my_classes'), icon: BookCopy },
+            { to: '/Teacher/progress', text: t('student_progress'), icon: ClipboardList },
           ]);
         }
       } catch (error) {

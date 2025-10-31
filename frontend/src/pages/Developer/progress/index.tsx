@@ -21,7 +21,7 @@ const ProgressPage = () => {
     const fetchTeachers = async () => {
       try {
         const teacherData = await getUsersByRole('teacher');
-        setTeachers(teacherData);
+        setTeachers(teacherData || []);
       } catch (err) {
         setError(t('error_fetching_data'));
       }
@@ -34,7 +34,7 @@ const ProgressPage = () => {
       const fetchClasses = async () => {
         try {
           const classData = await getClassesByTeacher(selectedTeacherId);
-          setClasses(classData);
+          setClasses(classData || []);
           setSelectedClassId('');
           setStudents([]);
         } catch (err) {
@@ -51,7 +51,7 @@ const ProgressPage = () => {
         setLoading(true);
         try {
           const studentData = await getStudentsInClass(selectedClassId);
-          setStudents(studentData);
+          setStudents(studentData || []);
 
           const progressData = await getProgressForClass(selectedClassId);
 
@@ -112,7 +112,7 @@ const ProgressPage = () => {
               className="w-full appearance-none bg-input border border-border rounded-lg px-4 py-2.5 text-sm pr-8"
             >
               <option value="" disabled>{t('select_teacher')}</option>
-              {teachers.map((t) => (
+              {teachers && teachers.map((t) => (
                 <option key={t.id} value={t.id}>{t.full_name}</option>
               ))}
             </select>
@@ -126,7 +126,7 @@ const ProgressPage = () => {
               className="w-full appearance-none bg-input border border-border rounded-lg px-4 py-2.5 text-sm pr-8"
             >
               <option value="" disabled>{t('select_class')}</option>
-              {classes.map((c) => (
+              {classes && classes.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -148,7 +148,7 @@ const ProgressPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map((student) => (
+                  {students && students.map((student) => (
                     <tr key={student.id} className="border-b">
                       <td className="p-3">{student.full_name}</td>
                       <td className="p-3">
