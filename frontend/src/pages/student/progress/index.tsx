@@ -3,53 +3,47 @@ import { useAuth } from '../../../context/AuthContext';
 import { formatProgress } from '../../../utils/quran';
 import Card from '../../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
-import LoadingSpinner from '../../../components/ui/LoadingSpinner';
-import { useRouter } from 'next/router';
 import { getMyData } from '../../../lib/api';
+import withAuth from '../../../components/withAuth';
+import AdminLayout from '../../../components/layouts/AdminLayout';
+import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
-export default function StudentDashboard() {
+function StudentDashboard() {
   const { t } = useTranslation();
-  const { token } = useAuth();
-  const router = useRouter();
   const [name, setName] = useState('');
   const [surah, setSurah] = useState<number | null>(null);
   const [ayah, setAyah] = useState<number | null>(null);
   const [page, setPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
-      return;
+    if (user) {
+      const fetchData = async () => {
+        try {
+          const data = await getMyData();
+          setName(data.username);
+          setSurah(data.progress_surah);
+          setAyah(data.progress_ayah);
+          setPage(data.progress_page);
+        } catch (error) {
+          setError(t('error_fetching_data'));
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
     }
+  }, [user, t]);
 
-    const fetchData = async () => {
-      try {
-        const data = await getMyData();
-        setName(data.username);
-        setSurah(data.progress_surah);
-        setAyah(data.progress_ayah);
-        setPage(data.progress_page);
-      } catch (error) {
-        console.error("Failed to fetch student data:", error);
-        // Handle error, e.g., show an error message
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [token, router]);
+  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-xl">
+    <AdminLayout loading={loading}>
+      <div className="p-4">
         <h1 className="text-2xl font-bold text-text mb-6">{t('studentDashboard')}</h1>
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <LoadingSpinner />
-          </div>
-        ) : (
+        <Card className="w-full max-w-xl">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-muted">{t('name')}:</span>
@@ -57,11 +51,15 @@ export default function StudentDashboard() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted">{t('currentProgress')}:</span>
-              <span className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">{formatProgress(surah, ayah, page)}</span>
+              <span className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">
+                {formatProgress(surah, ayah, page)}
+              </span>
             </div>
           </div>
-        )}
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </AdminLayout>
   );
 }
+
+export default withAuth(StudentDashboard, ['student']);

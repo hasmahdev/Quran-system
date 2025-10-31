@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getUsersByRole, createUser, updateUser, deleteUser } from '../../../lib/api';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, User } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
+import withAuth from '../../../components/withAuth';
+import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 const TeachersPage = () => {
   const { t } = useTranslation();
@@ -15,6 +17,7 @@ const TeachersPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
   const [formData, setFormData] = useState({ full_name: '', password: '' });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchTeachers = async () => {
     setLoading(true);
@@ -37,21 +40,13 @@ const TeachersPage = () => {
     setFormData(teacher ? { full_name: teacher.full_name, password: '' } : { full_name: '', password: '' });
     setIsModalOpen(true);
   };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedTeacher(null);
-  };
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const handleOpenConfirm = (teacher: any) => {
     setSelectedTeacher(teacher);
     setIsConfirmOpen(true);
   };
-
-  const handleCloseConfirm = () => {
-    setIsConfirmOpen(false);
-    setSelectedTeacher(null);
-  };
+  const handleCloseConfirm = () => setIsConfirmOpen(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,10 +57,7 @@ const TeachersPage = () => {
     e.preventDefault();
     try {
       const userData = { ...formData, role: 'teacher' };
-
       if (selectedTeacher) {
-        // Hashing on update is not handled in this simplified example.
-        // A full implementation would require a separate Edge Function.
         await updateUser(selectedTeacher.id, { full_name: userData.full_name });
       } else {
         await createUser(userData);
@@ -89,39 +81,47 @@ const TeachersPage = () => {
     }
   };
 
-  if (loading) return <div>{t('loading')}</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  const filteredTeachers = teachers.filter(teacher =>
+    teacher.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
 
   return (
-    <AdminLayout>
+    <AdminLayout loading={loading}>
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">{t('teacher_management')}</h1>
-        <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-          <Plus size={20} className="mr-2" />
-          {t('add_teacher')}
-        </button>
-      </div>
-      <div className="bg-card p-4 rounded-lg">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-right p-2">{t('full_name')}</th>
-              <th className="text-right p-2">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {teachers.map((teacher) => (
-              <tr key={teacher.id} className="border-b">
-                <td className="p-2">{teacher.full_name}</td>
-                <td className="p-2 flex justify-end space-x-2">
-                  <button onClick={() => handleOpenModal(teacher)}><Edit size={20} /></button>
-                  <button onClick={() => handleOpenConfirm(teacher)}><Trash2 size={20} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+            <Plus size={20} className="mr-2" />
+            {t('add_teacher')}
+          </button>
+        </div>
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder={t('search_teachers')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 bg-input border border-border rounded-lg"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredTeachers.map((teacher) => (
+            <div key={teacher.id} className="bg-card p-4 rounded-lg shadow-sm flex flex-col justify-between">
+              <div className="flex items-center mb-4">
+                <div className="bg-primary/10 p-2 rounded-full mr-4">
+                  <User className="text-primary" />
+                </div>
+                <span className="font-semibold">{teacher.full_name}</span>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button onClick={() => handleOpenModal(teacher)}><Edit size={20} /></button>
+                <button onClick={() => handleOpenConfirm(teacher)}><Trash2 size={20} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedTeacher ? t('edit_teacher') : t('add_teacher')}>
@@ -150,9 +150,8 @@ const TeachersPage = () => {
         title={t('confirm_delete')}
         message={t('are_you_sure_delete_teacher')}
       />
-    </div>
     </AdminLayout>
   );
 };
 
-export default TeachersPage;
+export default withAuth(TeachersPage, ['developer']);

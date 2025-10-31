@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, createUser, updateUser, deleteUser, addStudentToClass, removeStudentFromClass, getClasses } from '../../../lib/api';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { getUsersByRole, createUser, updateUser, deleteUser, addStudentToClass, getClasses } from '../../../lib/api';
+import { Plus, Edit, Trash2, User } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
+import withAuth from '../../../components/withAuth';
+import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 const StudentsPage = () => {
   const { t } = useTranslation();
@@ -18,6 +20,7 @@ const StudentsPage = () => {
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [formData, setFormData] = useState({ full_name: '', password: '' });
   const [classIdToAssign, setClassIdToAssign] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -37,7 +40,6 @@ const StudentsPage = () => {
     fetchData();
   }, [t]);
 
-  // CRUD Modal Handlers
   const handleOpenModal = (student: any | null = null) => {
     setSelectedStudent(student);
     setFormData(student ? { full_name: student.full_name, password: '' } : { full_name: '', password: '' });
@@ -45,21 +47,18 @@ const StudentsPage = () => {
   };
   const handleCloseModal = () => setIsModalOpen(false);
 
-  // Confirmation Modal Handlers
   const handleOpenConfirm = (student: any) => {
     setSelectedStudent(student);
     setIsConfirmOpen(true);
   };
   const handleCloseConfirm = () => setIsConfirmOpen(false);
 
-  // Assign Modal Handlers
   const handleOpenAssignModal = (student: any) => {
     setSelectedStudent(student);
     setIsAssignModalOpen(true);
   };
   const handleCloseAssignModal = () => setIsAssignModalOpen(false);
 
-  // Form Handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -69,7 +68,6 @@ const StudentsPage = () => {
     e.preventDefault();
     try {
       const userData = { ...formData, role: 'student' };
-
       if (selectedStudent) {
         await updateUser(selectedStudent.id, { full_name: userData.full_name });
       } else {
@@ -99,7 +97,6 @@ const StudentsPage = () => {
     if (selectedStudent && classIdToAssign) {
       try {
         await addStudentToClass(classIdToAssign, selectedStudent.id);
-        // We could optionally refetch data here, but for now we just close the modal.
         handleCloseAssignModal();
       } catch (err) {
         setError(t('error_assigning_student'));
@@ -107,47 +104,52 @@ const StudentsPage = () => {
     }
   };
 
+  const filteredStudents = students.filter(student =>
+    student.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  if (loading) return <div>{t('loading')}</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
 
   return (
-    <AdminLayout>
+    <AdminLayout loading={loading}>
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">{t('student_management')}</h1>
-        <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-          <Plus size={20} className="mr-2" />
-          {t('add_student')}
-        </button>
-      </div>
-      <div className="bg-card p-4 rounded-lg">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-right p-2">{t('full_name')}</th>
-              <th className="text-right p-2">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.id} className="border-b">
-                <td className="p-2">{student.full_name}</td>
-                <td className="p-2 flex justify-end space-x-2">
-                  <button onClick={() => handleOpenAssignModal(student)} className="text-xs bg-blue-500 text-white py-1 px-2 rounded">{t('assign_to_class')}</button>
-                  <button onClick={() => handleOpenModal(student)}><Edit size={20} /></button>
-                  <button onClick={() => handleOpenConfirm(student)}><Trash2 size={20} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+            <Plus size={20} className="mr-2" />
+            {t('add_student')}
+          </button>
+        </div>
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder={t('search_students')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 bg-input border border-border rounded-lg"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredStudents.map((student) => (
+            <div key={student.id} className="bg-card p-4 rounded-lg shadow-sm flex flex-col justify-between">
+              <div className="flex items-center mb-4">
+                <div className="bg-primary/10 p-2 rounded-full mr-4">
+                  <User className="text-primary" />
+                </div>
+                <span className="font-semibold">{student.full_name}</span>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button onClick={() => handleOpenAssignModal(student)} className="text-xs bg-blue-500 text-white py-1 px-2 rounded">{t('assign_to_class')}</button>
+                <button onClick={() => handleOpenModal(student)}><Edit size={20} /></button>
+                <button onClick={() => handleOpenConfirm(student)}><Trash2 size={20} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Add/Edit Student Modal */}
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedStudent ? t('edit_student') : t('add_student')}>
         <form onSubmit={handleSubmit}>
-          {/* Form fields are the same as Teachers page */}
           <div className="space-y-4">
             <div>
               <label htmlFor="full_name">{t('full_name')}</label>
@@ -165,7 +167,6 @@ const StudentsPage = () => {
         </form>
       </Modal>
 
-      {/* Assign to Class Modal */}
       <Modal isOpen={isAssignModalOpen} onClose={handleCloseAssignModal} title={t('assign_to_class')}>
         <form onSubmit={handleAssignToClass}>
           <select onChange={(e) => setClassIdToAssign(e.target.value)} defaultValue="" className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required>
@@ -179,7 +180,6 @@ const StudentsPage = () => {
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={isConfirmOpen}
         onClose={handleCloseConfirm}
@@ -187,9 +187,8 @@ const StudentsPage = () => {
         title={t('confirm_delete')}
         message={t('are_you_sure_delete_student')}
       />
-    </div>
     </AdminLayout>
   );
 };
 
-export default StudentsPage;
+export default withAuth(StudentsPage, ['developer']);

@@ -60,5 +60,17 @@
   "confirm_removal": "تأكيد الإزالة",
   "are_you_sure_remove_student": "هل أنت متأكد أنك تريد إزالة هذا الطالب من الفصل؟",
   "error_removing_student": "خطأ في إزالة الطالب.",
-  "student_progress": "تقدم الطالب"
+  "student_progress": "تقدم الطالب",
+  "search_students": "ابحث عن الطلاب...",
+  "search_teachers": "ابحث عن المعلمين...",
+  "search_classes": "ابحث عن الفصول...",
+  "access_denied": "الوصول مرفوض",
+  "no_permission": "ليس لديك إذن لعرض هذه الصفحة.",
+  "go_home": "اذهب إلى الصفحة الرئيسية",
+  "success": "نجاح",
+  "studentDashboard": "لوحة تحكم الطالب",
+  "currentProgress": "التقدم الحالي",
+  "name": "الاسم",
+  "error_occurred": "حدث خطأ",
+  "error_saving_progress": "خطأ في حفظ التقدم."
 }

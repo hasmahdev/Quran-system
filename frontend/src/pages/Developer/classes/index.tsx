@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClasses, getUsersByRole, createClass, updateClass, deleteClass } from '../../../lib/api';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, BookOpen } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
+import withAuth from '../../../components/withAuth';
+import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 const ClassesPage = () => {
   const { t } = useTranslation();
@@ -16,6 +18,7 @@ const ClassesPage = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [formData, setFormData] = useState({ name: '', teacher_id: '' });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -40,21 +43,13 @@ const ClassesPage = () => {
     setFormData(cls ? { name: cls.name, teacher_id: cls.teacher_id } : { name: '', teacher_id: '' });
     setIsModalOpen(true);
   };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedClass(null);
-  };
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const handleOpenConfirm = (cls: any) => {
     setSelectedClass(cls);
     setIsConfirmOpen(true);
   };
-
-  const handleCloseConfirm = () => {
-    setIsConfirmOpen(false);
-    setSelectedClass(null);
-  };
+  const handleCloseConfirm = () => setIsConfirmOpen(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -88,41 +83,50 @@ const ClassesPage = () => {
     }
   };
 
-  if (loading) return <div>{t('loading')}</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  const filteredClasses = classes.filter(cls =>
+    cls.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
 
   return (
-    <AdminLayout>
+    <AdminLayout loading={loading}>
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">{t('class_management')}</h1>
-        <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-          <Plus size={20} className="mr-2" />
-          {t('add_class')}
-        </button>
-      </div>
-      <div className="bg-card p-4 rounded-lg">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-right p-2">{t('class_name')}</th>
-              <th className="text-right p-2">{t('teacher')}</th>
-              <th className="text-right p-2">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {classes.map((cls) => (
-              <tr key={cls.id} className="border-b">
-                <td className="p-2">{cls.name}</td>
-                <td className="p-2">{cls.teacher?.full_name || t('unassigned')}</td>
-                <td className="p-2 flex justify-end space-x-2">
-                  <button onClick={() => handleOpenModal(cls)}><Edit size={20} /></button>
-                  <button onClick={() => handleOpenConfirm(cls)}><Trash2 size={20} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+            <Plus size={20} className="mr-2" />
+            {t('add_class')}
+          </button>
+        </div>
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder={t('search_classes')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 bg-input border border-border rounded-lg"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredClasses.map((cls) => (
+            <div key={cls.id} className="bg-card p-4 rounded-lg shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center mb-2">
+                  <div className="bg-primary/10 p-2 rounded-full mr-4">
+                    <BookOpen className="text-primary" />
+                  </div>
+                  <h2 className="text-xl font-bold">{cls.name}</h2>
+                </div>
+                <p className="text-muted text-sm">{t('teacher')}: {cls.teacher?.full_name || t('unassigned')}</p>
+              </div>
+              <div className="flex justify-end space-x-2 mt-4">
+                <button onClick={() => handleOpenModal(cls)}><Edit size={20} /></button>
+                <button onClick={() => handleOpenConfirm(cls)}><Trash2 size={20} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedClass ? t('edit_class') : t('add_class')}>
@@ -156,9 +160,8 @@ const ClassesPage = () => {
         title={t('confirm_delete')}
         message={t('are_you_sure_delete_class')}
       />
-    </div>
     </AdminLayout>
   );
 };
 
-export default ClassesPage;
+export default withAuth(ClassesPage, ['developer']);

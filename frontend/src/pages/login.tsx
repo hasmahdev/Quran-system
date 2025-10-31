@@ -83,7 +83,6 @@ export default function LoginPage() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="developer"
               required
               className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -96,7 +95,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading || success}
-            className={`w-full text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-300 ${success ? 'bg-green-500' : 'bg-primary hover:bg-opacity-90'}`}
+            className={`w-full text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-300 bg-primary hover:bg-opacity-90`}
           >
             {success ? (
               <span className="flex items-center justify-center">

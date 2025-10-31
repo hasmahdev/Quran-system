@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
-import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList } from 'lucide-react';
+import { Users, BarChart, LogOut, PanelLeft, Menu, BookCopy, ClipboardList, UserRoundCog } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { jwtDecode } from 'jwt-decode';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface DecodedToken {
   id: number;
@@ -12,7 +13,7 @@ interface DecodedToken {
   exp: number;
 }
 
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading?: boolean }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const { token, setToken } = useAuth();
@@ -38,7 +39,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         const role = decodedToken.role;
         if (role === 'developer') {
           setNavLinks([
-            { to: '/Developer/teachers', text: t('teachers'), icon: Users },
+            { to: '/Developer/teachers', text: t('teachers'), icon: UserRoundCog },
             { to: '/Developer/classes', text: t('classes'), icon: BookCopy },
             { to: '/Developer/students', text: t('students'), icon: Users },
             { to: '/Developer/progress', text: t('progress'), icon: BarChart },
@@ -133,7 +134,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </header>
         <main className="flex-1 overflow-y-auto">
           <div className="p-4 animate-fade-in-up w-full">
-            {children}
+            {loading ? <div className="flex justify-center items-center h-full"><LoadingSpinner /></div> : children}
           </div>
         </main>
       </div>
