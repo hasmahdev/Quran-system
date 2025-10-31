@@ -82,7 +82,7 @@ const TeachersPage = () => {
   };
 
   const filteredTeachers = teachers.filter(teacher =>
-    teacher.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+    teacher.full_name && teacher.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;

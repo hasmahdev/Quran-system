@@ -105,7 +105,7 @@ const StudentsPage = () => {
   };
 
   const filteredStudents = students.filter(student =>
-    student.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+    student.full_name && student.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;

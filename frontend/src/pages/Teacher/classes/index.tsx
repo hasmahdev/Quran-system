@@ -88,7 +88,7 @@ const MyClassesPage = () => {
   };
 
   const filteredClasses = classes.filter(cls =>
-    cls.name.toLowerCase().includes(searchQuery.toLowerCase())
+    cls.name && cls.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;

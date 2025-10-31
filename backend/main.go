@@ -18,7 +18,7 @@ import (
 
 type User struct {
 	ID       int    `json:"id"`
-	Username string `json:"username"`
+	FullName string `json:"full_name"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
 }
@@ -103,7 +103,7 @@ func loginHandler(c *fiber.Ctx) error {
 	log.Printf("Login attempt for user: %s", req.Username)
 
 	var user User
-	err := db.QueryRow(context.Background(), "SELECT id, username, password, role FROM users WHERE username=$1", req.Username).Scan(&user.ID, &user.Username, &user.Password, &user.Role)
+	err := db.QueryRow(context.Background(), "SELECT id, full_name, password, role FROM users WHERE full_name=$1", req.Username).Scan(&user.ID, &user.FullName, &user.Password, &user.Role)
 	if err != nil {
 		log.Printf("User lookup failed for '%s': %v", req.Username, err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
@@ -136,7 +136,7 @@ func loginHandler(c *fiber.Ctx) error {
 // User Management Handlers
 func getUsers(c *fiber.Ctx) error {
 	role := c.Query("role")
-	rows, err := db.Query(context.Background(), "SELECT id, username, role FROM users WHERE role=$1", role)
+	rows, err := db.Query(context.Background(), "SELECT id, full_name, role FROM users WHERE role=$1", role)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
@@ -145,7 +145,7 @@ func getUsers(c *fiber.Ctx) error {
 	var users []User
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role); err != nil {
+		if err := rows.Scan(&user.ID, &user.FullName, &user.Role); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		users = append(users, user)
@@ -165,7 +165,7 @@ func createUser(c *fiber.Ctx) error {
 	}
 	user.Password = string(hashedPassword)
 
-	_, err = db.Exec(context.Background(), "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", user.Username, user.Password, user.Role)
+	_, err = db.Exec(context.Background(), "INSERT INTO users (full_name, password, role) VALUES ($1, $2, $3)", user.FullName, user.Password, user.Role)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
@@ -184,7 +184,7 @@ func updateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	_, err = db.Exec(context.Background(), "UPDATE users SET username=$1, role=$2 WHERE id=$3", user.Username, user.Role, id)
+	_, err = db.Exec(context.Background(), "UPDATE users SET full_name=$1, role=$2 WHERE id=$3", user.FullName, user.Role, id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
@@ -320,7 +320,7 @@ func getClassStudents(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid class ID"})
 	}
-	rows, err := db.Query(context.Background(), "SELECT u.id, u.username, u.role FROM users u JOIN class_members cm ON u.id = cm.student_id WHERE cm.class_id=$1", id)
+	rows, err := db.Query(context.Background(), "SELECT u.id, u.full_name, u.role FROM users u JOIN class_members cm ON u.id = cm.student_id WHERE cm.class_id=$1", id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
@@ -329,7 +329,7 @@ func getClassStudents(c *fiber.Ctx) error {
 	var users []User
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role); err != nil {
+		if err := rows.Scan(&user.ID, &user.FullName, &user.Role); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		users = append(users, user)
@@ -434,13 +434,13 @@ func getMyData(c *fiber.Ctx) error {
 	id := int(claims["id"].(float64))
 
 	var student struct {
-		Username      string `json:"username"`
+		FullName      string `json:"full_name"`
 		ProgressSurah int    `json:"progress_surah"`
 		ProgressAyah  int    `json:"progress_ayah"`
 		ProgressPage  int    `json:"progress_page"`
 	}
 
-	err := db.QueryRow(context.Background(), "SELECT username, progress_surah, progress_ayah, progress_page FROM users WHERE id=$1", id).Scan(&student.Username, &student.ProgressSurah, &student.ProgressAyah, &student.ProgressPage)
+	err := db.QueryRow(context.Background(), "SELECT full_name, progress_surah, progress_ayah, progress_page FROM users WHERE id=$1", id).Scan(&student.FullName, &student.ProgressSurah, &student.ProgressAyah, &student.ProgressPage)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
