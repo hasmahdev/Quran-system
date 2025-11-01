@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClasses, getUsersByRole, createClass, updateClass, deleteClass } from '../../../lib/api';
 import { Plus, Edit, Trash2, BookOpen } from 'lucide-react';
-import Modal from '../../../components/ui/Modal';
-import ConfirmationModal from '../../../components/ui/ConfirmationModal';
+import Modal from '../../../components/shared/Modal';
+import ConfirmationModal from '../../../components/shared/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
-import ErrorDisplay from '../../../components/ui/ErrorDisplay';
+import ErrorDisplay from '../../../components/shared/ErrorDisplay';
 
 const ClassesPage = () => {
   const { t } = useTranslation();

@@ -4,11 +4,10 @@ import { useRouter } from 'next/router';
 import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 import { Plus, Edit, Trash2, Users, BookOpen } from 'lucide-react';
-import Modal from '../../../components/ui/Modal';
-import ConfirmationModal from '../../../components/ui/ConfirmationModal';
-import withAuth from '../../../components/withAuth';
+import Modal from '../../../components/shared/Modal';
+import ConfirmationModal from '../../../components/shared/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
-import ErrorDisplay from '../../../components/ui/ErrorDisplay';
+import ErrorDisplay from '../../../components/shared/ErrorDisplay';
 
 const MyClassesPage = () => {
   const { t } = useTranslation();
@@ -153,4 +152,4 @@ const MyClassesPage = () => {
   );
 };
 
-export default withAuth(MyClassesPage, ['teacher']);
+export default MyClassesPage;

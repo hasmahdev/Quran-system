@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatProgress } from '../utils/quran';
+import { formatProgress } from '../../utils/quran';
 import { Edit2 } from 'lucide-react';
-import Card from './ui/Card';
+import Card from './Card';
 
 interface ProgressCardProps {
   student: any;

@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
-import withAuth from '../../../components/withAuth';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import { ChevronDown, Search } from 'lucide-react';
-import ErrorDisplay from '../../../components/ui/ErrorDisplay';
-import ProgressCard from '../../../components/ProgressCard';
-import EditProgressDialog from '../../../components/EditProgressDialog';
+import ErrorDisplay from '../../../components/shared/ErrorDisplay';
+import ProgressCard from '../../../components/shared/ProgressCard';
+import EditProgressDialog from '../../../components/shared/EditProgressDialog';
 
 const TeacherProgressPage = () => {
   const { t } = useTranslation();
@@ -132,4 +131,4 @@ const TeacherProgressPage = () => {
   );
 };
 
-export default withAuth(TeacherProgressPage, ['teacher']);
+export default TeacherProgressPage;

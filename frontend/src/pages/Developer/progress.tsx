@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { getStudentsInClass, updateStudentProgress } from '../../lib/api';
 import { surahNames, formatProgress } from '../../utils/quran';
 import AdminLayout from '../../components/layouts/AdminLayout';
-import Card from '../../components/ui/Card';
-import Modal from '../../components/ui/Modal';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Card from '../../components/shared/Card';
+import Modal from '../../components/shared/Modal';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 

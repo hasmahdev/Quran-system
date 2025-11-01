@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { surahs } from '../utils/surah';
+import { surahs } from '../../utils/surah';
 import { X } from 'lucide-react';
 
 interface EditProgressDialogProps {

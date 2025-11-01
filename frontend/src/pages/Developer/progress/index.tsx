@@ -4,9 +4,9 @@ import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentP
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
 import { ChevronDown, Search } from 'lucide-react';
-import ErrorDisplay from '../../../components/ui/ErrorDisplay';
-import ProgressCard from '../../../components/ProgressCard';
-import EditProgressDialog from '../../../components/EditProgressDialog';
+import ErrorDisplay from '../../../components/shared/ErrorDisplay';
+import ProgressCard from '../../../components/shared/ProgressCard';
+import EditProgressDialog from '../../../components/shared/EditProgressDialog';
 
 const ProgressPage = () => {
   const { t } = useTranslation();
