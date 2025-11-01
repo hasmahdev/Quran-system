@@ -5,7 +5,7 @@ import Card from '../../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import { getMyData } from '../../../lib/api';
 import withAuth from '../../../components/withAuth';
-import AdminLayout from '../../../components/layouts/AdminLayout';
+import StudentLayout from '../../../components/layouts/StudentLayout';
 import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 function StudentDashboard() {
@@ -37,12 +37,12 @@ function StudentDashboard() {
     }
   }, [user, t]);
 
-  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
+  if (error) return <StudentLayout><ErrorDisplay message={error} /></StudentLayout>;
 
   return (
-    <AdminLayout loading={loading}>
+    <StudentLayout loading={loading}>
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-text mb-6">{t('studentDashboard')}</h1>
+        <h1 className="text-2xl font-bold text-text mb-6">{t('welcome_student', { name })}</h1>
         <Card className="w-full max-w-xl">
           <div className="space-y-4">
             <div className="flex justify-between items-center">

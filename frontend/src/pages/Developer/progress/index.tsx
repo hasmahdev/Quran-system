@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, getClassesByTeacher, getStudentsInClass, getProgressForClass, updateStudentProgress } from '../../../lib/api';
+import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
 import { ChevronDown } from 'lucide-react';
@@ -13,7 +13,6 @@ const ProgressPage = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [students, setStudents] = useState<any[]>([]);
-  const [progress, setProgress] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,49 +46,37 @@ const ProgressPage = () => {
 
   useEffect(() => {
     if (selectedClassId) {
-      const fetchStudentsAndProgress = async () => {
+      const fetchStudents = async () => {
         setLoading(true);
         try {
           const studentData = await getStudentsInClass(selectedClassId);
           setStudents(studentData || []);
-
-          const progressData = await getProgressForClass(selectedClassId);
-
-          const progressMap = progressData.reduce((acc: any, p: any) => {
-            if (p) {
-              acc[p.student_id] = p;
-            }
-            return acc;
-          }, {});
-          setProgress(progressMap);
         } catch (err) {
           setError(t('error_fetching_data'));
         } finally {
           setLoading(false);
         }
       };
-      fetchStudentsAndProgress();
+      fetchStudents();
     }
   }, [selectedClassId, t]);
 
   const handleProgressChange = (studentId: string, field: string, value: any) => {
-    setProgress((prev: any) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [field]: value,
-      },
-    }));
+    setStudents((prev: any) =>
+      prev.map((s: any) =>
+        s.id === studentId ? { ...s, [field]: value } : s
+      )
+    );
   };
 
   const handleSaveProgress = async (studentId: string) => {
-    const progressToUpdate = progress[studentId];
-    if (progressToUpdate) {
+    const studentToUpdate = students.find(s => s.id === studentId);
+    if (studentToUpdate && studentToUpdate.progress_id) {
       try {
-        await updateStudentProgress(progressToUpdate.id, {
-          surah: progressToUpdate.surah,
-          ayah: progressToUpdate.ayah,
-          page: progressToUpdate.page,
+        await updateStudentProgress(studentToUpdate.progress_id, {
+          surah: studentToUpdate.surah,
+          ayah: studentToUpdate.ayah,
+          page: studentToUpdate.page,
         });
         alert('Progress saved!');
       } catch (err) {
@@ -154,7 +141,7 @@ const ProgressPage = () => {
                       <td className="p-3">
                         <input
                           type="number"
-                          value={progress[student.id]?.surah || ''}
+                          value={student.surah || ''}
                           onChange={(e) => handleProgressChange(student.id, 'surah', e.target.value)}
                           className="w-24 bg-input border rounded p-1.5 text-sm"
                         />
@@ -162,7 +149,7 @@ const ProgressPage = () => {
                       <td className="p-3">
                         <input
                           type="number"
-                          value={progress[student.id]?.ayah || ''}
+                          value={student.ayah || ''}
                           onChange={(e) => handleProgressChange(student.id, 'ayah', e.target.value)}
                           className="w-24 bg-input border rounded p-1.5 text-sm"
                         />
@@ -170,13 +157,17 @@ const ProgressPage = () => {
                       <td className="p-3">
                         <input
                           type="number"
-                          value={progress[student.id]?.page || ''}
+                          value={student.page || ''}
                           onChange={(e) => handleProgressChange(student.id, 'page', e.target.value)}
                           className="w-24 bg-input border rounded p-1.5 text-sm"
                         />
                       </td>
                       <td className="p-3">
-                        <button onClick={() => handleSaveProgress(student.id)} className="bg-primary text-white py-1.5 px-4 rounded-lg text-sm font-semibold">
+                        <button
+                          onClick={() => handleSaveProgress(student.id)}
+                          disabled={!student.progress_id}
+                          className="bg-primary text-white py-1.5 px-4 rounded-lg text-sm font-semibold disabled:bg-opacity-50"
+                        >
                           {t('save')}
                         </button>
                       </td>

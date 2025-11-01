@@ -23,6 +23,16 @@ type User struct {
 	Role     string `json:"role"`
 }
 
+type StudentWithProgress struct {
+	ID         int    `json:"id"`
+	Username   string `json:"full_name"`
+	Role       string `json:"role"`
+	ProgressID *int   `json:"progress_id"`
+	Surah      *int   `json:"surah"`
+	Ayah       *int   `json:"ayah"`
+	Page       *int   `json:"page"`
+}
+
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -186,6 +196,7 @@ func updateUser(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "UPDATE users SET username=$1, role=$2 WHERE id=$3", user.Username, user.Role, id)
 	if err != nil {
+		log.Printf("Error updating user: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -320,21 +331,31 @@ func getClassStudents(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid class ID"})
 	}
-	rows, err := db.Query(context.Background(), "SELECT u.id, u.username, u.role FROM users u JOIN class_members cm ON u.id = cm.student_id WHERE cm.class_id=$1", id)
+
+	query := `
+        SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
+        FROM users u
+        JOIN class_members cm ON u.id = cm.student_id
+        LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
+        WHERE cm.class_id = $1
+    `
+	rows, err := db.Query(context.Background(), query, id)
 	if err != nil {
+		log.Printf("Error getting class students with progress: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	defer rows.Close()
 
-	var users []User
+	var students []StudentWithProgress
 	for rows.Next() {
-		var user User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role); err != nil {
+		var student StudentWithProgress
+		if err := rows.Scan(&student.ID, &student.Username, &student.Role, &student.ProgressID, &student.Surah, &student.Ayah, &student.Page); err != nil {
+			log.Printf("Error scanning student with progress: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
-		users = append(users, user)
+		students = append(students, student)
 	}
-	return c.JSON(users)
+	return c.JSON(students)
 }
 
 func addClassStudent(c *fiber.Ctx) error {
@@ -350,8 +371,32 @@ func addClassStudent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	_, err = db.Exec(context.Background(), "INSERT INTO class_members (class_id, student_id) VALUES ($1, $2)", classId, req.StudentID)
+	tx, err := db.Begin(context.Background())
 	if err != nil {
+		log.Printf("Error starting transaction: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
+	}
+	defer tx.Rollback(context.Background())
+
+	_, err = tx.Exec(context.Background(), "INSERT INTO class_members (class_id, student_id) VALUES ($1, $2)", classId, req.StudentID)
+	if err != nil {
+		log.Printf("Error adding student to class: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
+	}
+
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	teacherId := int(claims["id"].(float64))
+
+	_, err = tx.Exec(context.Background(), "INSERT INTO progress (student_id, class_id, surah, ayah, page, updated_by) VALUES ($1, $2, 1, 1, 1, $3)", req.StudentID, classId, teacherId)
+	if err != nil {
+		log.Printf("Error creating progress for student: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
+	}
+
+	err = tx.Commit(context.Background())
+	if err != nil {
+		log.Printf("Error committing transaction: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -384,6 +429,7 @@ func getClassProgress(c *fiber.Ctx) error {
 	}
 	rows, err := db.Query(context.Background(), "SELECT id, student_id, surah, ayah, page FROM progress WHERE class_id=$1", classId)
 	if err != nil {
+		log.Printf("Error getting class progress: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	defer rows.Close()
@@ -422,6 +468,7 @@ func updateProgress(c *fiber.Ctx) error {
 	}
 	_, err = db.Exec(context.Background(), "UPDATE progress SET surah=$1, ayah=$2, page=$3 WHERE id=$4", progress.Surah, progress.Ayah, progress.Page, id)
 	if err != nil {
+		log.Printf("Error updating progress: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	return c.JSON(progress)
