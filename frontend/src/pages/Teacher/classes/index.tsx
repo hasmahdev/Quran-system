@@ -122,7 +122,7 @@ export default function ClassesPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.filter(cls => cls.name.toLowerCase().includes(searchQuery.toLowerCase())).map((cls) => (
+          {items.filter(cls => cls.name && cls.name.toLowerCase().includes(searchQuery.toLowerCase())).map((cls) => (
             <Card key={cls.id}>
               <div className="flex justify-between items-start gap-2">
                 <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{cls.name}</h3>

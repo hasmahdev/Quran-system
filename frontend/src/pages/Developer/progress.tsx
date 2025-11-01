@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getStudentsInClass, updateStudentProgress } from '../../lib/api';
+import { getStudentsInClass, updateStudentProgress, getClasses } from '../../lib/api';
 import { surahNames, formatProgress } from '../../utils/quran';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Card from '../../components/shared/Card';
@@ -26,6 +26,8 @@ export default function ProgressPage() {
   async function load() {
     setLoading(true);
     try {
+      const classData = await getClasses();
+      setClasses(classData || []);
       if (selectedClassId) {
         const data = await getStudentsInClass(selectedClassId);
         setStudents(data || []);
