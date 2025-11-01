@@ -378,7 +378,7 @@ func addClassStudent(c *fiber.Ctx) error {
 	}
 	defer tx.Rollback(context.Background())
 
-	_, err = tx.Exec(context.Background(), "INSERT INTO class_members (class_id, student_id) VALUES ($1, $2)", classId, req.StudentID)
+	_, err = tx.Exec(context.Background(), "INSERT INTO class_members (class_id, student_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", classId, req.StudentID)
 	if err != nil {
 		log.Printf("Error adding student to class: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
@@ -388,7 +388,7 @@ func addClassStudent(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	teacherId := int(claims["id"].(float64))
 
-	_, err = tx.Exec(context.Background(), "INSERT INTO progress (student_id, class_id, surah, ayah, page, updated_by) VALUES ($1, $2, 1, 1, 1, $3)", req.StudentID, classId, teacherId)
+	_, err = tx.Exec(context.Background(), "INSERT INTO progress (student_id, class_id, surah, ayah, page, updated_by) VALUES ($1, $2, 1, 1, 1, $3) ON CONFLICT DO NOTHING", req.StudentID, classId, teacherId)
 	if err != nil {
 		log.Printf("Error creating progress for student: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})

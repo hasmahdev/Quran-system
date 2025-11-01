@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import ErrorDisplay from '../../../components/ui/ErrorDisplay';
+import ProgressCard from '../../../components/ProgressCard';
+import EditProgressDialog from '../../../components/EditProgressDialog';
 
 const ProgressPage = () => {
   const { t } = useTranslation();
@@ -13,8 +15,11 @@ const ProgressPage = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [students, setStudents] = useState<any[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingStudent, setEditingStudent] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -61,27 +66,27 @@ const ProgressPage = () => {
     }
   }, [selectedClassId, t]);
 
-  const handleProgressChange = (studentId: string, field: string, value: any) => {
-    setStudents((prev: any) =>
-      prev.map((s: any) =>
-        s.id === studentId ? { ...s, [field]: value } : s
+  useEffect(() => {
+    setFilteredStudents(
+      students.filter(student =>
+        student.full_name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-  };
+  }, [searchTerm, students]);
 
-  const handleSaveProgress = async (studentId: string) => {
-    const studentToUpdate = students.find(s => s.id === studentId);
-    if (studentToUpdate && studentToUpdate.progress_id) {
-      try {
-        await updateStudentProgress(studentToUpdate.progress_id, {
-          surah: studentToUpdate.surah,
-          ayah: studentToUpdate.ayah,
-          page: studentToUpdate.page,
-        });
-        alert('Progress saved!');
-      } catch (err) {
-        setError(t('error_saving_progress'));
-      }
+  const handleSaveProgress = async (updatedProgress: any) => {
+    try {
+      await updateStudentProgress(updatedProgress.progressId, {
+        surah: updatedProgress.surah,
+        ayah: updatedProgress.ayah,
+        page: updatedProgress.page,
+      });
+      setEditingStudent(null);
+      // Refetch students to get updated progress
+      const studentData = await getStudentsInClass(selectedClassId);
+      setStudents(studentData || []);
+    } catch (err) {
+      setError(t('error_saving_progress'));
     }
   };
 
@@ -90,8 +95,8 @@ const ProgressPage = () => {
   return (
     <AdminLayout loading={loading}>
       <div>
-        <h1 className="text-2xl font-bold mb-4">{t('progress_overview')}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <h1 className="text-2xl font-bold mb-4">{t('manage_progress')}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="relative">
             <select
               onChange={(e) => setSelectedTeacherId(e.target.value)}
@@ -119,64 +124,36 @@ const ProgressPage = () => {
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
           </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={t('search_student')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          </div>
         </div>
 
         {selectedClassId && (
-          <div className="bg-card p-4 rounded-lg">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-right p-3 font-semibold text-sm">{t('student_name')}</th>
-                    <th className="text-right p-3 font-semibold text-sm">{t('surah')}</th>
-                    <th className="text-right p-3 font-semibold text-sm">{t('ayah')}</th>
-                    <th className="text-right p-3 font-semibold text-sm">{t('page')}</th>
-                    <th className="text-right p-3 font-semibold text-sm">{t('actions')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students && students.map((student) => (
-                    <tr key={student.id} className="border-b">
-                      <td className="p-3">{student.full_name}</td>
-                      <td className="p-3">
-                        <input
-                          type="number"
-                          value={student.surah || ''}
-                          onChange={(e) => handleProgressChange(student.id, 'surah', e.target.value)}
-                          className="w-24 bg-input border rounded p-1.5 text-sm"
-                        />
-                      </td>
-                      <td className="p-3">
-                        <input
-                          type="number"
-                          value={student.ayah || ''}
-                          onChange={(e) => handleProgressChange(student.id, 'ayah', e.target.value)}
-                          className="w-24 bg-input border rounded p-1.5 text-sm"
-                        />
-                      </td>
-                      <td className="p-3">
-                        <input
-                          type="number"
-                          value={student.page || ''}
-                          onChange={(e) => handleProgressChange(student.id, 'page', e.target.value)}
-                          className="w-24 bg-input border rounded p-1.5 text-sm"
-                        />
-                      </td>
-                      <td className="p-3">
-                        <button
-                          onClick={() => handleSaveProgress(student.id)}
-                          disabled={!student.progress_id}
-                          className="bg-primary text-white py-1.5 px-4 rounded-lg text-sm font-semibold disabled:bg-opacity-50"
-                        >
-                          {t('save')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredStudents.map((student) => (
+              <ProgressCard
+                key={student.id}
+                student={student}
+                onEdit={() => setEditingStudent(student)}
+              />
+            ))}
           </div>
+        )}
+
+        {editingStudent && (
+          <EditProgressDialog
+            student={editingStudent}
+            onClose={() => setEditingStudent(null)}
+            onSave={handleSaveProgress}
+          />
         )}
       </div>
     </AdminLayout>
