@@ -1,134 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useMemo, useState } from 'react';
 import { getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
-import { useAuth } from '../../../context/AuthContext';
+import { surahNames, formatProgress } from '../../../utils/quran';
 import AdminLayout from '../../../components/layouts/AdminLayout';
-import { ChevronDown, Search } from 'lucide-react';
-import ErrorDisplay from '../../../components/shared/ErrorDisplay';
-import ProgressCard from '../../../components/shared/ProgressCard';
-import EditProgressDialog from '../../../components/shared/EditProgressDialog';
+import Card from '../../../components/shared/Card';
+import Modal from '../../../components/shared/Modal';
+import LoadingSpinner from '../../../components/shared/LoadingSpinner';
+import { Edit } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../../context/AuthContext';
 
-const TeacherProgressPage = () => {
+type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+
+export default function ProgressPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [formData, setFormData] = useState({ surah: 1, ayah: 1, page: 1 });
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
-  const [students, setStudents] = useState<any[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editingStudent, setEditingStudent] = useState<any | null>(null);
-  const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      const fetchClasses = async () => {
-        try {
-          const classData = await getClassesByTeacher(String(user.id));
-          setClasses(classData || []);
-        } catch (err) {
-          setError(t('error_fetching_data'));
-        }
-      };
-      fetchClasses();
-    }
-  }, [user, t]);
-
-  useEffect(() => {
-    if (selectedClassId) {
-      const fetchStudents = async () => {
-        setLoading(true);
-        try {
-          const studentData = await getStudentsInClass(selectedClassId);
-          setStudents(studentData || []);
-        } catch (err) {
-          setError(t('error_fetching_data'));
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchStudents();
-    }
-  }, [selectedClassId, t]);
-
-  useEffect(() => {
-    setFilteredStudents(
-      students.filter(student =>
-        student.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-  }, [searchTerm, students]);
-
-  const handleSaveProgress = async (updatedProgress: any) => {
+  async function load() {
+    setLoading(true);
     try {
-      await updateStudentProgress(updatedProgress.progressId, {
-        surah: updatedProgress.surah,
-        ayah: updatedProgress.ayah,
-        page: updatedProgress.page,
+      if (user) {
+        const classData = await getClassesByTeacher(String(user.id));
+        setClasses(classData || []);
+      }
+      if (selectedClassId) {
+        const data = await getStudentsInClass(selectedClassId);
+        setStudents(data || []);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+  }, [selectedClassId, user]);
+
+  const openModal = (student: Student) => {
+    setEditingStudent(student);
+    setFormData({ surah: student.progress_surah || 1, ayah: student.progress_ayah || 1, page: student.progress_page || 1 });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingStudent(null);
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: parseInt(e.target.value) });
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStudent) return;
+    setError(null);
+    setSuccess(false);
+    try {
+      await updateStudentProgress(editingStudent.id, {
+        surah: formData.surah,
+        ayah: formData.ayah,
+        page: formData.page,
       });
-      setEditingStudent(null);
-      // Refetch students to get updated progress
-      const studentData = await getStudentsInClass(selectedClassId);
-      setStudents(studentData || []);
-    } catch (err) {
-      setError(t('error_saving_progress'));
+      await load();
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+      closeModal();
+    } catch (e: any) {
+      setError(e.message || 'Failed to save progress');
     }
   };
 
-  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
-
   return (
-    <AdminLayout loading={loading}>
-      <div>
-        <h1 className="text-2xl font-bold mb-4">{t('student_progress')}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="relative">
-            <select
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              value={selectedClassId}
-              className="w-full appearance-none bg-input border border-border rounded-lg px-4 py-2.5 text-sm pr-8"
-            >
-              <option value="" disabled>{t('select_a_class')}</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+    <AdminLayout>
+      <h1 className="text-3xl font-bold text-text mb-8">{t('manageProgress')}</h1>
+
+      <div className="mb-6">
+        <select
+          onChange={(e) => setSelectedClassId(e.target.value)}
+          value={selectedClassId}
+          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          <option value="" disabled>{t('select_a_class')}</option>
+          {classes.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder={t('searchStudent')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
+      {success && <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-6">{t('progressSaved')}</div>}
+
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {students.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+            <Card key={student.id}>
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
+                <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
+                  <Edit size={18} />
+                </button>
+              </div>
+              <div className="mt-2 text-sm text-muted">
+                {formatProgress(student.progress_surah, student.progress_ayah, student.progress_page)}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={`${t('editProgressFor')} ${editingStudent?.name}`}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="surah" className="block text-sm font-medium text-muted mb-2">{t('surah')}</label>
+            <select id="surah" name="surah" value={formData.surah} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+              {surahNames.map((n, i) => (
+                <option key={i} value={i + 1}>{n}</option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
           </div>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder={t('search_student')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm pl-10"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <div>
+            <label htmlFor="ayah" className="block text-sm font-medium text-muted mb-2">{t('ayah')}</label>
+            <input type="number" id="ayah" name="ayah" min={1} value={formData.ayah} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
-        </div>
-
-        {selectedClassId && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredStudents.map((student) => (
-              <ProgressCard
-                key={student.id}
-                student={student}
-                onEdit={() => setEditingStudent(student)}
-              />
-            ))}
+          <div>
+            <label htmlFor="page" className="block text-sm font-medium text-muted mb-2">{t('page')}</label>
+            <input type="number" id="page" name="page" min={1} value={formData.page} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
-        )}
-
-        {editingStudent && (
-          <EditProgressDialog
-            student={editingStudent}
-            onClose={() => setEditingStudent(null)}
-            onSave={handleSaveProgress}
-          />
-        )}
-      </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
+            <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
+            <button
+              type="submit"
+              className="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
+            >
+              {t('save')}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </AdminLayout>
   );
-};
-
-export default TeacherProgressPage;
+}

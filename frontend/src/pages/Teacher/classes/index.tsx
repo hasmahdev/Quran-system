@@ -1,155 +1,175 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/router';
+import { useEffect, useMemo, useState } from 'react';
 import { getClassesByTeacher, createClass, updateClass, deleteClass } from '../../../lib/api';
-import { useAuth } from '../../../context/AuthContext';
-import { Plus, Edit, Trash2, Users, BookOpen } from 'lucide-react';
+import { formatProgress } from '../../../utils/quran';
+import AdminLayout from '../../../components/layouts/AdminLayout';
+import Card from '../../../components/shared/Card';
 import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
-import AdminLayout from '../../../components/layouts/AdminLayout';
-import ErrorDisplay from '../../../components/shared/ErrorDisplay';
+import LoadingSpinner from '../../../components/shared/LoadingSpinner';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../../context/AuthContext';
 
-const MyClassesPage = () => {
+type Class = { id: string; name: string; teacher_id: string; };
+
+export default function ClassesPage() {
   const { t } = useTranslation();
-  const router = useRouter();
-  const [classes, setClasses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [formData, setFormData] = useState({ name: '' });
-  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
+  const [items, setItems] = useState<Class[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ name: '', teacher_id: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchClasses = useCallback(async () => {
-    if (!user) return;
+  async function load() {
     setLoading(true);
     try {
-      const data = await getClassesByTeacher(String(user.id));
-      setClasses(data || []);
-    } catch (err) {
-      setError(t('error_fetching_classes'));
-    } finally {
-      setLoading(false);
+      if (user) {
+        const classData = await getClassesByTeacher(String(user.id));
+        setItems(classData || []);
+      }
+    } catch (err: any) {
+      setError(err.message);
     }
-  }, [user, t]);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    if (user) {
-      fetchClasses();
-    }
-  }, [user, fetchClasses]);
+    load();
+  }, [user]);
 
-  const handleOpenModal = (cls: any | null = null) => {
-    setSelectedClass(cls);
-    setFormData(cls ? { name: cls.name } : { name: '' });
+  const openModal = (cls: Class | null = null) => {
+    setEditingClass(cls);
+    setFormData({ name: cls ? cls.name : '', teacher_id: user ? String(user.id) : '' });
     setIsModalOpen(true);
   };
-  const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleOpenConfirm = (cls: any) => {
-    setSelectedClass(cls);
-    setIsConfirmOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingClass(null);
   };
-  const handleCloseConfirm = () => setIsConfirmOpen(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const openConfirmModal = (id: string) => {
+    setDeletingClassId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+    setDeletingClassId(null);
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    setError(null);
     try {
-      if (selectedClass) {
-        await updateClass(selectedClass.id, formData);
+      if (editingClass) {
+        await updateClass(editingClass.id, formData);
       } else {
-        await createClass({ ...formData, teacher_id: user.id });
+        await createClass(formData);
       }
-      fetchClasses();
-      handleCloseModal();
-    } catch (err) {
-      setError(t('error_saving_class'));
+      await load();
+      closeModal();
+    } catch (e: any) {
+      setError(e.message || 'Failed to save class');
     }
   };
 
   const handleDelete = async () => {
-    if (selectedClass) {
-      try {
-        await deleteClass(selectedClass.id);
-        fetchClasses();
-        handleCloseConfirm();
-      } catch (err) {
-        setError(t('error_deleting_class'));
-      }
+    if (!deletingClassId) return;
+    try {
+      await deleteClass(deletingClassId);
+      await load();
+      closeConfirmModal();
+    } catch (e: any) {
+      setError(e.message || 'Failed to delete class');
     }
   };
 
-  const navigateToStudents = (classId: string) => {
-    router.push(`/Teacher/roster?classId=${classId}`);
-  };
-
-  const filteredClasses = classes.filter(cls =>
-    cls.name && cls.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (error) return <AdminLayout><ErrorDisplay message={error} /></AdminLayout>;
-
   return (
-    <AdminLayout loading={loading}>
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">{t('my_classes')}</h1>
-          <button onClick={() => handleOpenModal()} className="bg-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-            <Plus size={20} className="mr-2" />
-            {t('create_class')}
-          </button>
-        </div>
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder={t('search_classes')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 bg-input border border-border rounded-lg"
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredClasses.map((cls) => (
-            <div key={cls.id} className="bg-card p-4 rounded-lg shadow-sm flex flex-col justify-between">
-              <div className="flex items-center mb-4">
-                <div className="bg-primary/10 p-2 rounded-full mr-4">
-                  <BookOpen className="text-primary" />
-                </div>
-                <h2 className="text-xl font-bold">{cls.name}</h2>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button onClick={() => navigateToStudents(cls.id)} className="text-xs bg-blue-500 text-white py-1 px-2 rounded flex items-center"><Users size={16} className="mr-1" />{t('manage_students')}</button>
-                <button onClick={() => handleOpenModal(cls)}><Edit size={20} /></button>
-                <button onClick={() => handleOpenConfirm(cls)}><Trash2 size={20} /></button>
-              </div>
-            </div>
-          ))}
-        </div>
+    <AdminLayout>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-text">{t('classes')}</h1>
+        <button
+          onClick={() => openModal()}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all duration-200 transform active:scale-95"
+        >
+          <Plus size={20} /> {t('addClass')}
+        </button>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedClass ? t('edit_class') : t('add_class')}>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="name">{t('class_name')}</label>
-          <input type="text" name="name" value={formData.name} onChange={(e) => setFormData({ name: e.target.value })} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
-          <div className="mt-4 flex justify-end space-x-2">
-            <button type="button" onClick={handleCloseModal} className="bg-gray-200 py-2 px-4 rounded-lg">{t('cancel')}</button>
-            <button type="submit" className="bg-primary text-white py-2 px-4 rounded-lg">{t('save')}</button>
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder={t('searchClass')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
+
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {items.filter(cls => cls.name.toLowerCase().includes(searchQuery.toLowerCase())).map((cls) => (
+            <Card key={cls.id}>
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{cls.name}</h3>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <button onClick={() => openModal(cls)} className="text-muted hover:text-text transition-colors">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => openConfirmModal(cls.id)} className="text-muted hover:text-red-500 transition-colors">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingClass ? t('editClass') : t('addClass')}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
+            <input type="text" id="name" name="name" value={formData.name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
+            <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>
+            <button
+              type="submit"
+              className="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white font-bold py-2.5 px-5 rounded-lg transition-colors"
+            >
+              {t('save')}
+            </button>
           </div>
         </form>
       </Modal>
 
       <ConfirmationModal
-        isOpen={isConfirmOpen}
-        onClose={handleCloseConfirm}
+        isOpen={isConfirmModalOpen}
+        onClose={closeConfirmModal}
         onConfirm={handleDelete}
-        title={t('confirm_delete')}
-        message={t('are_you_sure_delete_class')}
+        title={t('deleteClass')}
+        message={t('confirmDelete')}
       />
     </AdminLayout>
   );
-};
-
-export default MyClassesPage;
+}
