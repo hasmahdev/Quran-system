@@ -58,7 +58,7 @@ function StudentDashboard() {
           </div>
         </Card>
       </div>
-    </AdminLayout>
+    </StudentLayout>
   );
 }
 
