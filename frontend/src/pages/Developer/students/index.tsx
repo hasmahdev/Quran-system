@@ -5,7 +5,6 @@ import { Plus, Edit, Trash2, User } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import AdminLayout from '../../../components/layouts/AdminLayout';
-import withAuth from '../../../components/withAuth';
 import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 const StudentsPage = () => {
@@ -191,4 +190,4 @@ const StudentsPage = () => {
   );
 };
 
-export default withAuth(StudentsPage, ['developer']);
+export default StudentsPage;
