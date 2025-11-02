@@ -71,10 +71,14 @@ export default function ClassesPage() {
     e.preventDefault();
     setError(null);
     try {
+      const classData = {
+        ...formData,
+        teacher_id: parseInt(formData.teacher_id, 10),
+      };
       if (editingClass) {
-        await updateClass(editingClass.id, formData);
+        await updateClass(editingClass.id, classData);
       } else {
-        await createClass(formData);
+        await createClass(classData);
       }
       await load();
       closeModal();
