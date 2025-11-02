@@ -148,6 +148,7 @@ func getUsers(c *fiber.Ctx) error {
 	role := c.Query("role")
 	rows, err := db.Query(context.Background(), "SELECT id, username, role FROM users WHERE role=$1", role)
 	if err != nil {
+		log.Printf("getUsers: db.Query failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	defer rows.Close()
@@ -156,6 +157,7 @@ func getUsers(c *fiber.Ctx) error {
 	for rows.Next() {
 		var user User
 		if err := rows.Scan(&user.ID, &user.Username, &user.Role); err != nil {
+			log.Printf("getUsers: rows.Scan failed: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		users = append(users, user)
@@ -177,6 +179,7 @@ func createUser(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", user.Username, user.Password, user.Role)
 	if err != nil {
+		log.Printf("createUser: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -211,6 +214,7 @@ func deleteUser(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "DELETE FROM users WHERE id=$1", id)
 	if err != nil {
+		log.Printf("deleteUser: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -221,6 +225,7 @@ func deleteUser(c *fiber.Ctx) error {
 func getClasses(c *fiber.Ctx) error {
 	rows, err := db.Query(context.Background(), "SELECT id, name, teacher_id FROM classes")
 	if err != nil {
+		log.Printf("getClasses: db.Query failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	defer rows.Close()
@@ -235,6 +240,7 @@ func getClasses(c *fiber.Ctx) error {
 	for rows.Next() {
 		var class Class
 		if err := rows.Scan(&class.ID, &class.Name, &class.TeacherID); err != nil {
+			log.Printf("getClasses: rows.Scan failed: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		classes = append(classes, class)
@@ -250,6 +256,7 @@ func getTeacherClasses(c *fiber.Ctx) error {
 
 	rows, err := db.Query(context.Background(), "SELECT id, name, teacher_id FROM classes WHERE teacher_id=$1", id)
 	if err != nil {
+		log.Printf("getTeacherClasses: db.Query failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 	defer rows.Close()
@@ -264,6 +271,7 @@ func getTeacherClasses(c *fiber.Ctx) error {
 	for rows.Next() {
 		var class Class
 		if err := rows.Scan(&class.ID, &class.Name, &class.TeacherID); err != nil {
+			log.Printf("getTeacherClasses: rows.Scan failed: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		classes = append(classes, class)
@@ -283,6 +291,7 @@ func createClass(c *fiber.Ctx) error {
 
 	_, err := db.Exec(context.Background(), "INSERT INTO classes (name, teacher_id) VALUES ($1, $2)", class.Name, class.TeacherID)
 	if err != nil {
+		log.Printf("createClass: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -305,6 +314,7 @@ func updateClass(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "UPDATE classes SET name=$1 WHERE id=$2", class.Name, id)
 	if err != nil {
+		log.Printf("updateClass: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -319,6 +329,7 @@ func deleteClass(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "DELETE FROM classes WHERE id=$1", id)
 	if err != nil {
+		log.Printf("deleteClass: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -415,6 +426,7 @@ func removeClassStudent(c *fiber.Ctx) error {
 
 	_, err = db.Exec(context.Background(), "DELETE FROM class_members WHERE class_id=$1 AND student_id=$2", classId, studentId)
 	if err != nil {
+		log.Printf("removeClassStudent: db.Exec failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
@@ -445,6 +457,7 @@ func getClassProgress(c *fiber.Ctx) error {
 	for rows.Next() {
 		var progress Progress
 		if err := rows.Scan(&progress.ID, &progress.StudentID, &progress.Surah, &progress.Ayah, &progress.Page); err != nil {
+			log.Printf("getClassProgress: rows.Scan failed: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 		}
 		progresses = append(progresses, progress)
@@ -489,6 +502,7 @@ func getMyData(c *fiber.Ctx) error {
 
 	err := db.QueryRow(context.Background(), "SELECT username, progress_surah, progress_ayah, progress_page FROM users WHERE id=$1", id).Scan(&student.Username, &student.ProgressSurah, &student.ProgressAyah, &student.ProgressPage)
 	if err != nil {
+		log.Printf("getMyData: db.QueryRow failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database error"})
 	}
 
