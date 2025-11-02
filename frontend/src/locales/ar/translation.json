@@ -79,7 +79,6 @@
   "editProgressFor": "تعديل التقدم لـ",
   "phone": "رقم الهاتف",
   "addStudent": "إضافة طالب",
-  "searchStudent": "ابحث عن طالب...",
   "editStudent": "تعديل طالب",
   "deleteStudent": "حذف طالب",
   "confirmDelete": "هل أنت متأكد؟",
@@ -92,5 +91,10 @@
   "editClass": "تعديل فصل",
   "deleteClass": "حذف فصل",
   "selectTeacher": "اختر معلمًا",
-  "confirm": "تأكيد"
+  "confirm": "تأكيد",
+  "welcome_student": "مرحباً يا {{name}}",
+  "classes": "الفصول",
+  "edit_progress_for": "تعديل التقدم لـ",
+  "manage_progress": "إدارة التقدم",
+  "search_student": "ابحث عن طالب..."
 }

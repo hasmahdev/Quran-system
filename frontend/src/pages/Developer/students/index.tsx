@@ -10,7 +10,7 @@ import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Student = { id: string; name: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: string; full_name: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function StudentsPage() {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export default function StudentsPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', password: '', phone: '' });
+  const [formData, setFormData] = useState({ full_name: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,7 +41,7 @@ export default function StudentsPage() {
 
   const openModal = (student: Student | null = null) => {
     setEditingStudent(student);
-    setFormData({ name: student ? student.name : '', password: '', phone: student ? student.phone || '' : '' });
+    setFormData({ full_name: student ? student.full_name : '', password: '', phone: student ? student.phone || '' : '' });
     setIsModalOpen(true);
   };
 
@@ -69,7 +69,7 @@ export default function StudentsPage() {
     setError(null);
     try {
       const studentData = {
-        full_name: formData.name,
+        full_name: formData.full_name,
         password: formData.password,
         role: 'student',
       };
@@ -125,10 +125,10 @@ export default function StudentsPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.filter(student => student.name && student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+          {items.filter(student => student.full_name && student.full_name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.full_name}</h3>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
                     <Edit size={18} />
@@ -159,8 +159,8 @@ export default function StudentsPage() {
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
-            <input type="text" id="name" name="name" value={formData.name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label htmlFor="full_name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
+            <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <div>
              <label htmlFor="phone" className="block text-sm font-medium text-muted mb-2">{t('phone')}</label>

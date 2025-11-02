@@ -3,7 +3,7 @@ package models
 // User represents a user in the system (teacher, student, or admin).
 type User struct {
 	ID       int    `json:"id"`
-	Username string `json:"full_name"`
+	FullName string `json:"full_name"`
 	Password string `json:"password,omitempty"` // omitempty to prevent sending it in responses
 	Role     string `json:"role"`
 }
