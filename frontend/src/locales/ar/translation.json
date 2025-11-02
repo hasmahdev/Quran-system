@@ -97,5 +97,7 @@
   "edit_progress_for": "تعديل التقدم لـ",
   "manage_progress": "إدارة التقدم",
   "search_student": "ابحث عن طالب...",
-  "teachers": "المعلمون"
+  "teachers": "المعلمون",
+  "student": "الطالب",
+  "select_a_student": "اختر طالبًا"
 }

@@ -13,20 +13,25 @@ const StudentRosterPage = () => {
   const router = useRouter();
   const { classId } = router.query;
   const [students, setStudents] = useState<any[]>([]);
+  const [allStudents, setAllStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', password: '' });
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchStudents = async () => {
     if (classId) {
       setLoading(true);
       try {
-        const data = await getStudentsInClass(classId as string);
-        setStudents(data || []);
+        const [classStudents, allStudentsData] = await Promise.all([
+          getStudentsInClass(classId as string),
+          getUsersByRole('student'),
+        ]);
+        setStudents(classStudents || []);
+        setAllStudents(allStudentsData || []);
       } catch (err) {
         setError(t('error_fetching_students'));
       } finally {
@@ -48,21 +53,10 @@ const StudentRosterPage = () => {
   };
   const handleCloseConfirm = () => setIsConfirmOpen(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const userData = { ...formData, role: 'student' };
-      const newUser = await createUser(userData);
-
-      if (newUser && newUser.length > 0) {
-        await addStudentToClass(classId as string, newUser[0].id);
-      }
-
+      await addStudentToClass(classId as string, selectedStudentId);
       fetchStudents();
       handleCloseModal();
     } catch (err) {
@@ -129,12 +123,23 @@ const StudentRosterPage = () => {
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="full_name">{t('full_name')}</label>
-              <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label htmlFor="password">{t('password')}</label>
-              <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
+              <label htmlFor="student">{t('student')}</label>
+              <select
+                name="student"
+                value={selectedStudentId}
+                onChange={(e) => setSelectedStudentId(e.target.value)}
+                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm"
+                required
+              >
+                <option value="">{t('select_a_student')}</option>
+                {allStudents
+                  .filter((student) => !students.find((s) => s.id === student.id))
+                  .map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.full_name}
+                    </option>
+                  ))}
+              </select>
             </div>
           </div>
           <div className="mt-4 flex justify-end space-x-2">
