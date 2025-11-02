@@ -24,6 +24,7 @@ const handleResponse = async (response: Response) => {
 export const getUsersByRole = async (role: string) => {
   const response = await fetch(`${API_URL}/users?role=${role}`, {
     headers: getAuthHeaders(),
+    cache: 'no-cache',
   });
   const data = await handleResponse(response);
   return data || [];
@@ -59,6 +60,7 @@ export const deleteUser = async (userId: string) => {
 export const getMyData = async () => {
     const response = await fetch(`${API_URL}/students/me`, {
         headers: getAuthHeaders(),
+        cache: 'no-cache',
     });
     return handleResponse(response);
 };
@@ -67,6 +69,7 @@ export const getMyData = async () => {
 export const getProgressForClass = async (classId: string) => {
     const response = await fetch(`${API_URL}/classes/${classId}/progress`, {
         headers: getAuthHeaders(),
+        cache: 'no-cache',
     });
     return handleResponse(response);
 };
@@ -84,6 +87,7 @@ export const updateStudentProgress = async (progressId: string, updates: any) =>
 export const getStudentsInClass = async (classId: string) => {
     const response = await fetch(`${API_URL}/classes/${classId}/students`, {
         headers: getAuthHeaders(),
+        cache: 'no-cache',
     });
     return handleResponse(response);
 };
@@ -109,6 +113,7 @@ export const removeStudentFromClass = async (classId: string, studentId: string)
 export const getClasses = async () => {
     const response = await fetch(`${API_URL}/classes`, {
         headers: getAuthHeaders(),
+        cache: 'no-cache',
     });
     const data = await handleResponse(response);
     return data || [];
@@ -117,6 +122,7 @@ export const getClasses = async () => {
 export const getClassesByTeacher = async (teacherId: string) => {
     const response = await fetch(`${API_URL}/teachers/${teacherId}/classes`, {
         headers: getAuthHeaders(),
+        cache: 'no-cache',
     });
     return handleResponse(response);
 };
