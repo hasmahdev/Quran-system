@@ -32,8 +32,6 @@ export default function StudentsPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [filteredItems, setFilteredItems] = useState<Student[]>([]);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedClassToAssign, setSelectedClassToAssign] = useState<Class | null>(null);
 
   async function load() {
@@ -119,34 +117,19 @@ export default function StudentsPage() {
 
       if (editingStudent) {
         await updateUser(editingStudent.id, { full_name: studentData.full_name, phone: studentData.phone });
+        if (selectedClassToAssign) {
+          await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
+        }
       } else {
-        await createUser(studentData);
+        const newUser = await createUser(studentData);
+        if (selectedClassToAssign) {
+          await addStudentToClass(selectedClassToAssign.id, newUser.id);
+        }
       }
       await load();
       closeModal();
     } catch (e: any) {
       setError(e.message || 'Failed to save student');
-    }
-  };
-
-  const openAssignModal = (student: Student) => {
-    setSelectedStudent(student);
-    setIsAssignModalOpen(true);
-  };
-
-  const closeAssignModal = () => {
-    setSelectedStudent(null);
-    setIsAssignModalOpen(false);
-  };
-
-  const handleAssignStudent = async () => {
-    if (selectedStudent && selectedClassToAssign) {
-      try {
-        await addStudentToClass(selectedClassToAssign.id, selectedStudent.id);
-        closeAssignModal();
-      } catch (e: any) {
-        setError(e.message || 'Failed to assign student');
-      }
     }
   };
 
@@ -228,9 +211,6 @@ export default function StudentsPage() {
                   <button onClick={() => openConfirmModal(student.id)} className="text-muted hover:text-red-500 transition-colors">
                     <Trash2 size={18} />
                   </button>
-                  <button onClick={() => openAssignModal(student)} className="text-muted hover:text-text transition-colors">
-                    <UserPlus size={18} />
-                  </button>
                 </div>
               </div>
                {student.phone && (
@@ -245,27 +225,6 @@ export default function StudentsPage() {
           ))}
         </div>
       )}
-
-      <Modal
-        isOpen={isAssignModalOpen}
-        onClose={closeAssignModal}
-        title={t('assignStudentToClass')}
-        maxWidth="max-w-lg"
-      >
-        <div className="space-y-4">
-          <FilterableDropdown
-            items={classes}
-            selectedItem={selectedClassToAssign}
-            onSelectItem={setSelectedClassToAssign}
-            placeholder={t('selectClass')}
-            label="name"
-          />
-          <div className="flex justify-end gap-4">
-            <button onClick={closeAssignModal} className="bg-gray-200 p-2 rounded-lg">{t('cancel')}</button>
-            <button onClick={handleAssignStudent} className="bg-primary text-white p-2 rounded-lg">{t('assign')}</button>
-          </div>
-        </div>
-      </Modal>
 
       <Modal
         isOpen={isModalOpen}
@@ -285,6 +244,16 @@ export default function StudentsPage() {
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>
             <PasswordInput id="password" name="password" value={formData.password} onChange={handleFormChange} required={!editingStudent} />
+          </div>
+          <div>
+            <label htmlFor="class" className="block text-sm font-medium text-muted mb-2">{t('class')}</label>
+            <FilterableDropdown
+              items={classes}
+              selectedItem={selectedClassToAssign}
+              onSelectItem={setSelectedClassToAssign}
+              placeholder={t('selectClass')}
+              label="name"
+            />
           </div>
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
             <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>

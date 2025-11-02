@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { surahs } from '../../utils/surah';
 import { X } from 'lucide-react';
+import FilterableDropdown from './FilterableDropdown';
 
 interface EditProgressDialogProps {
   student: any;
@@ -11,22 +12,24 @@ interface EditProgressDialogProps {
 
 const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClose, onSave }) => {
   const { t } = useTranslation();
-  const [surah, setSurah] = React.useState(student.surah || 1);
+  const [surah, setSurah] = React.useState(surahs.find((s) => s.id === (student.surah || 1)));
   const [ayah, setAyah] = React.useState(student.ayah || 1);
   const [page, setPage] = React.useState(student.page || 1);
 
   const handleSave = () => {
-    onSave({
-      progressId: student.progress_id,
-      surah,
-      ayah,
-      page,
-    });
+    if (surah) {
+      onSave({
+        progressId: student.progress_id,
+        surah: surah.id,
+        ayah,
+        page,
+      });
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-card rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">{t('edit_progress_for')} {student.full_name}</h2>
           <button onClick={onClose} className="text-muted hover:text-primary">
@@ -36,17 +39,13 @@ const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClos
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">{t('surah')}</label>
-            <select
-              value={surah}
-              onChange={(e) => setSurah(Number(e.target.value))}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm"
-            >
-              {surahs.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.id} - {s.name}
-                </option>
-              ))}
-            </select>
+            <FilterableDropdown
+              items={surahs}
+              selectedItem={surah}
+              onSelectItem={setSurah}
+              placeholder={t('select_surah')}
+              label="name"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">{t('ayah')}</label>
@@ -54,7 +53,7 @@ const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClos
               type="number"
               value={ayah}
               onChange={(e) => setAyah(Number(e.target.value))}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm"
+              className="w-full bg-white border border-border rounded-lg px-4 py-2.5 text-sm"
             />
           </div>
           <div>
@@ -63,7 +62,7 @@ const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClos
               type="number"
               value={page}
               onChange={(e) => setPage(Number(e.target.value))}
-              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-sm"
+              className="w-full bg-white border border-border rounded-lg px-4 py-2.5 text-sm"
             />
           </div>
         </div>

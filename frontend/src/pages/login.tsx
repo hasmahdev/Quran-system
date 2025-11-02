@@ -35,28 +35,26 @@ export default function LoginPage() {
         setToken(data.token);
         setSuccess(true);
 
-        setTimeout(() => {
-          try {
-            const decoded: { role: string } = jwtDecode(data.token);
+        try {
+          const decoded: { role: string } = jwtDecode(data.token);
 
-            switch (decoded.role) {
-              case 'developer':
-                router.push('/Developer');
-                break;
-              case 'teacher':
-                router.push('/Teacher');
-                break;
-              case 'student':
-                router.push('/student');
-                break;
-              default:
-                router.push('/');
-            }
-          } catch (e) {
-            console.error("Failed to decode token for redirect", e);
-            router.push('/');
+          switch (decoded.role) {
+            case 'developer':
+              router.push('/Developer');
+              break;
+            case 'teacher':
+              router.push('/Teacher');
+              break;
+            case 'student':
+              router.push('/student');
+              break;
+            default:
+              router.push('/');
           }
-        }, 1000); // Wait 1 second for animation before redirect
+        } catch (e) {
+          console.error("Failed to decode token for redirect", e);
+          router.push('/');
+        }
 
       } else {
         const errorData = await response.json().catch(() => response.text());
@@ -73,7 +71,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className={`w-full max-w-md transition-all duration-500 ${success ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
+      <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-text mb-2">{t('login')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
@@ -97,12 +95,12 @@ export default function LoginPage() {
             disabled={loading || success}
             className={`w-full text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-300 bg-primary hover:bg-opacity-90`}
           >
-            {success ? (
-              <span className="flex items-center justify-center">
-                <CheckCircle className="mr-2" /> {t('success')}
-              </span>
+            {loading || success ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+              </div>
             ) : (
-              loading ? t('loading') : t('login')
+              t('login')
             )}
           </button>
         </form>
