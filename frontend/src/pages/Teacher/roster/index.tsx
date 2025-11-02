@@ -59,8 +59,8 @@ const StudentRosterPage = () => {
       const userData = { ...formData, role: 'student' };
       const newUser = await createUser(userData);
 
-      if (newUser && newUser.length > 0) {
-        await addStudentToClass(classId as string, newUser[0].id);
+      if (newUser && newUser.id) {
+        await addStudentToClass(classId as string, newUser.id);
       }
 
       fetchStudents();
