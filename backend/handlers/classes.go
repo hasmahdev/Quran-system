@@ -111,10 +111,11 @@ func (h *ClassHandler) AddClassStudent(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	teacherId := int(claims["id"].(float64))
 
-	if err := h.service.AddStudentToClass(c.Context(), classId, req.StudentID, teacherId); err != nil {
+	student, err := h.service.AddStudentToClass(c.Context(), classId, req.StudentID, teacherId)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to add student to class"})
 	}
-	return c.SendStatus(fiber.StatusCreated)
+	return c.Status(fiber.StatusCreated).JSON(student)
 }
 
 // RemoveClassStudent handles the request to remove a student from a class.

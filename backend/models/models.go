@@ -43,3 +43,11 @@ type Progress struct {
 	Page      int `json:"page"`
 	UpdatedBy int `json:"updated_by"` // Teacher who updated the progress
 }
+
+// StudentData represents the data for a student's dashboard.
+type StudentData struct {
+	Username      string `json:"username"`
+	ProgressSurah int    `json:"progress_surah"`
+	ProgressAyah  int    `json:"progress_ayah"`
+	ProgressPage  int    `json:"progress_page"`
+}

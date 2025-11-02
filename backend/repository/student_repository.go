@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/kolind-am/quran-project/backend/models"
 )
 
 // StudentRepository defines the interface for student data operations.
 type StudentRepository interface {
-	FindStudentData(ctx context.Context, id int) (*StudentData, error)
+	FindStudentData(ctx context.Context, id int) (*models.StudentData, error)
 }
 
 type pgxStudentRepository struct {
@@ -20,15 +21,8 @@ func NewStudentRepository(db *pgxpool.Pool) StudentRepository {
 	return &pgxStudentRepository{db: db}
 }
 
-type StudentData struct {
-	Username      string `json:"username"`
-	ProgressSurah int    `json:"progress_surah"`
-	ProgressAyah  int    `json:"progress_ayah"`
-	ProgressPage  int    `json:"progress_page"`
-}
-
-func (r *pgxStudentRepository) FindStudentData(ctx context.Context, id int) (*StudentData, error) {
-	var student StudentData
+func (r *pgxStudentRepository) FindStudentData(ctx context.Context, id int) (*models.StudentData, error) {
+	var student models.StudentData
 	query := `
 		SELECT u.username, p.surah, p.ayah, p.page
 		FROM users u

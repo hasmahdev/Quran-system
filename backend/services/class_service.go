@@ -15,7 +15,7 @@ type ClassService interface {
 	UpdateClass(ctx context.Context, id int, class *models.Class) error
 	DeleteClass(ctx context.Context, id int) error
 	GetClassStudents(ctx context.Context, classID int) ([]models.StudentWithProgress, error)
-	AddStudentToClass(ctx context.Context, classID, studentID, teacherId int) error
+	AddStudentToClass(ctx context.Context, classID, studentID, teacherId int) (*models.StudentWithProgress, error)
 	RemoveStudentFromClass(ctx context.Context, classID, studentID int) error
 }
 
@@ -53,15 +53,11 @@ func (s *classService) GetClassStudents(ctx context.Context, classID int) ([]mod
 	return s.classRepo.FindStudentsByClassID(ctx, classID)
 }
 
-func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID, teacherId int) error {
-	// This logic requires a transaction to ensure atomicity, which should be handled in the repository/database layer.
-	// For simplicity in this refactoring, we'll call the methods sequentially.
-	// A more robust implementation would involve a transaction.
+func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID, teacherId int) (*models.StudentWithProgress, error) {
 	if err := s.classRepo.AddStudentToClass(ctx, classID, studentID); err != nil {
-		return err
+		return nil, err
 	}
 
-	// Create initial progress for the student
 	progress := &models.Progress{
 		StudentID: studentID,
 		ClassID:   classID,
@@ -70,7 +66,11 @@ func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID
 		Page:      1,
 		UpdatedBy: teacherId,
 	}
-	return s.progressRepo.Create(ctx, progress)
+	if err := s.progressRepo.Create(ctx, progress); err != nil {
+		return nil, err
+	}
+
+	return s.classRepo.FindStudentByClassAndStudentID(ctx, classID, studentID)
 }
 
 func (s *classService) RemoveStudentFromClass(ctx context.Context, classID, studentID int) error {

@@ -15,6 +15,7 @@ type ClassRepository interface {
 	Update(ctx context.Context, id int, class *models.Class) error
 	Delete(ctx context.Context, id int) error
 	FindStudentsByClassID(ctx context.Context, classID int) ([]models.StudentWithProgress, error)
+	FindStudentByClassAndStudentID(ctx context.Context, classID, studentID int) (*models.StudentWithProgress, error)
 	AddStudentToClass(ctx context.Context, classID, studentID int) error
 	RemoveStudentFromClass(ctx context.Context, classID, studentID int) error
 }
@@ -112,4 +113,20 @@ func (r *pgxClassRepository) AddStudentToClass(ctx context.Context, classID, stu
 func (r *pgxClassRepository) RemoveStudentFromClass(ctx context.Context, classID, studentID int) error {
 	_, err := r.db.Exec(ctx, "DELETE FROM class_members WHERE class_id=$1 AND student_id=$2", classID, studentID)
 	return err
+}
+
+func (r *pgxClassRepository) FindStudentByClassAndStudentID(ctx context.Context, classID, studentID int) (*models.StudentWithProgress, error) {
+	query := `
+        SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
+        FROM users u
+        JOIN class_members cm ON u.id = cm.student_id
+        LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
+        WHERE cm.class_id = $1 AND u.id = $2
+    `
+	var student models.StudentWithProgress
+	err := r.db.QueryRow(ctx, query, classID, studentID).Scan(&student.ID, &student.Username, &student.Role, &student.ProgressID, &student.Surah, &student.Ayah, &student.Page)
+	if err != nil {
+		return nil, err
+	}
+	return &student, nil
 }
