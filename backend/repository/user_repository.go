@@ -11,7 +11,7 @@ import (
 type UserRepository interface {
 	FindUsersByRole(ctx context.Context, role string) ([]models.User, error)
 	CreateUser(ctx context.Context, user *models.User) error
-	UpdateUser(ctx context.Context, id int, user *models.User) error
+	UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error)
 	DeleteUser(ctx context.Context, id int) error
 	FindUserByUsername(ctx context.Context, username string) (*models.User, error)
 }
@@ -52,9 +52,19 @@ func (r *pgxUserRepository) CreateUser(ctx context.Context, user *models.User) e
 }
 
 // UpdateUser updates an existing user in the database.
-func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models.User) error {
-	_, err := r.db.Exec(ctx, "UPDATE users SET username=$1, role=$2, phone=$3 WHERE id=$4", user.Username, user.Role, user.Phone, id)
-	return err
+func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error) {
+	query := `
+		UPDATE users
+		SET username=$1, role=$2, phone=$3
+		WHERE id=$4
+		RETURNING id, username, role, phone
+	`
+	updatedUser := &models.User{}
+	err := r.db.QueryRow(ctx, query, user.Username, user.Role, user.Phone, id).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone)
+	if err != nil {
+		return nil, err
+	}
+	return updatedUser, nil
 }
 
 // DeleteUser removes a user from the database.

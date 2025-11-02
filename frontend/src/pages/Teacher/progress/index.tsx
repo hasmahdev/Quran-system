@@ -9,7 +9,7 @@ import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 
-type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: string; name: string; progress_id?: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function ProgressPage() {
   const { t } = useTranslation();
@@ -67,7 +67,7 @@ export default function ProgressPage() {
     setError(null);
     setSuccess(false);
     try {
-      await updateStudentProgress(editingStudent.id, {
+      await updateStudentProgress(editingStudent.progress_id, {
         surah: formData.surah,
         ayah: formData.ayah,
         page: formData.page,

@@ -12,7 +12,7 @@ import (
 type UserService interface {
 	GetUsers(ctx context.Context, role string) ([]models.User, error)
 	CreateUser(ctx context.Context, user *models.User) error
-	UpdateUser(ctx context.Context, id int, user *models.User) error
+	UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error)
 	DeleteUser(ctx context.Context, id int) error
 }
 
@@ -46,7 +46,7 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) error {
 }
 
 // UpdateUser handles the business logic for updating a user.
-func (s *userService) UpdateUser(ctx context.Context, id int, user *models.User) error {
+func (s *userService) UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error) {
 	// Add any validation or business logic before updating.
 	return s.repo.UpdateUser(ctx, id, user)
 }

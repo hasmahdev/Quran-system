@@ -55,11 +55,12 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	if err := h.service.UpdateUser(c.Context(), id, &user); err != nil {
+	updatedUser, err := h.service.UpdateUser(c.Context(), id, &user)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update user"})
 	}
 
-	return c.JSON(user)
+	return c.JSON(updatedUser)
 }
 
 // DeleteUser handles the request to delete a user.

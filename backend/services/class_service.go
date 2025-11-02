@@ -66,7 +66,7 @@ func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID
 		Page:      1,
 		UpdatedBy: teacherId,
 	}
-	if err := s.progressRepo.Create(ctx, progress); err != nil {
+	if _, err := s.progressRepo.Create(ctx, progress); err != nil {
 		return nil, err
 	}
 

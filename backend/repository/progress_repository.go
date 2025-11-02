@@ -11,7 +11,7 @@ import (
 type ProgressRepository interface {
 	FindByClassID(ctx context.Context, classID int) ([]models.Progress, error)
 	Update(ctx context.Context, id int, progress *models.Progress) error
-	Create(ctx context.Context, progress *models.Progress) error
+	Create(ctx context.Context, progress *models.Progress) (*models.Progress, error)
 }
 
 type pgxProgressRepository struct {
@@ -46,8 +46,24 @@ func (r *pgxProgressRepository) Update(ctx context.Context, id int, progress *mo
 	return err
 }
 
-func (r *pgxProgressRepository) Create(ctx context.Context, progress *models.Progress) error {
-	_, err := r.db.Exec(ctx, "INSERT INTO progress (student_id, class_id, surah, ayah, page, updated_by) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
-		progress.StudentID, progress.ClassID, progress.Surah, progress.Ayah, progress.Page, progress.UpdatedBy)
-	return err
+func (r *pgxProgressRepository) Create(ctx context.Context, progress *models.Progress) (*models.Progress, error) {
+	query := `
+		INSERT INTO progress (student_id, class_id, surah, ayah, page, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, student_id, class_id, surah, ayah, page, updated_by
+	`
+	createdProgress := &models.Progress{}
+	err := r.db.QueryRow(ctx, query, progress.StudentID, progress.ClassID, progress.Surah, progress.Ayah, progress.Page, progress.UpdatedBy).Scan(
+		&createdProgress.ID,
+		&createdProgress.StudentID,
+		&createdProgress.ClassID,
+		&createdProgress.Surah,
+		&createdProgress.Ayah,
+		&createdProgress.Page,
+		&createdProgress.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return createdProgress, nil
 }
