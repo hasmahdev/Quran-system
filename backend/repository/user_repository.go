@@ -37,7 +37,7 @@ func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.ID, &user.FullName, &user.Role, &user.Phone); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -47,13 +47,13 @@ func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([
 
 // CreateUser inserts a new user into the database.
 func (r *pgxUserRepository) CreateUser(ctx context.Context, user *models.User) error {
-	_, err := r.db.Exec(ctx, "INSERT INTO users (username, password, role, phone) VALUES ($1, $2, $3, $4)", user.FullName, user.Password, user.Role, user.Phone)
+	_, err := r.db.Exec(ctx, "INSERT INTO users (username, password, role, phone) VALUES ($1, $2, $3, $4)", user.Username, user.Password, user.Role, user.Phone)
 	return err
 }
 
 // UpdateUser updates an existing user in the database.
 func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models.User) error {
-	_, err := r.db.Exec(ctx, "UPDATE users SET username=$1, role=$2, phone=$3 WHERE id=$4", user.FullName, user.Role, user.Phone, id)
+	_, err := r.db.Exec(ctx, "UPDATE users SET username=$1, role=$2, phone=$3 WHERE id=$4", user.Username, user.Role, user.Phone, id)
 	return err
 }
 
@@ -66,7 +66,7 @@ func (r *pgxUserRepository) DeleteUser(ctx context.Context, id int) error {
 // FindUserByUsername retrieves a single user by their username.
 func (r *pgxUserRepository) FindUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	err := r.db.QueryRow(ctx, "SELECT id, username, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.FullName, &user.Password, &user.Role, &user.Phone)
+	err := r.db.QueryRow(ctx, "SELECT id, username, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.Username, &user.Password, &user.Role, &user.Phone)
 	if err != nil {
 		return nil, err
 	}
