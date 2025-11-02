@@ -8,6 +8,7 @@ import ConfirmationModal from '../../../components/shared/ConfirmationModal';
 import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
 type Class = { id: string; name: string; teacher_id: string; };
 type Teacher = { id: string; full_name: string; };
@@ -21,7 +22,8 @@ export default function ClassesPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', teacher_id: '' });
+  const [formData, setFormData] = useState({ name: '' });
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -44,7 +46,8 @@ export default function ClassesPage() {
 
   const openModal = (cls: Class | null = null) => {
     setEditingClass(cls);
-    setFormData({ name: cls ? cls.name : '', teacher_id: cls ? cls.teacher_id : '' });
+    setFormData({ name: cls ? cls.name : '' });
+    setSelectedTeacher(cls ? teachers.find((t) => t.id === cls.teacher_id) || null : null);
     setIsModalOpen(true);
   };
 
@@ -63,7 +66,7 @@ export default function ClassesPage() {
     setDeletingClassId(null);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -73,7 +76,7 @@ export default function ClassesPage() {
     try {
       const classData = {
         ...formData,
-        teacher_id: parseInt(formData.teacher_id, 10),
+        teacher_id: selectedTeacher?.id,
       };
       if (editingClass) {
         await updateClass(editingClass.id, classData);
@@ -160,10 +163,13 @@ export default function ClassesPage() {
           </div>
           <div>
             <label htmlFor="teacher_id" className="block text-sm font-medium text-muted mb-2">{t('teacher')}</label>
-            <select id="teacher_id" name="teacher_id" value={formData.teacher_id} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-              <option value="">{t('selectTeacher')}</option>
-              {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-            </select>
+            <FilterableDropdown
+              items={teachers}
+              selectedItem={selectedTeacher}
+              onSelectItem={setSelectedTeacher}
+              placeholder={t('selectTeacher')}
+              label="full_name"
+            />
           </div>
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
             <button type="button" onClick={closeModal} className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-text font-bold py-2.5 px-5 rounded-lg transition-colors">{t('cancel')}</button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
-import { getStudentsInClass, removeStudentFromClass, createUser, addStudentToClass } from '../../../lib/api';
+import { getStudentsInClass, removeStudentFromClass, createUser, addStudentToClass, getUsersByRole } from '../../../lib/api';
 import { Plus, Trash2, User } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';

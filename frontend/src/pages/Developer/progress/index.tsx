@@ -3,17 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
-import { ChevronDown, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import ErrorDisplay from '../../../components/shared/ErrorDisplay';
 import ProgressCard from '../../../components/shared/ProgressCard';
 import EditProgressDialog from '../../../components/shared/EditProgressDialog';
+import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
 const ProgressPage = () => {
   const { t } = useTranslation();
   const [teachers, setTeachers] = useState<any[]>([]);
-  const [selectedTeacherId, setSelectedTeacherId] = useState('');
+  const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,12 +35,12 @@ const ProgressPage = () => {
   }, [t]);
 
   useEffect(() => {
-    if (selectedTeacherId) {
+    if (selectedTeacher) {
       const fetchClasses = async () => {
         try {
-          const classData = await getClassesByTeacher(selectedTeacherId);
+          const classData = await getClassesByTeacher(selectedTeacher.id);
           setClasses(classData || []);
-          setSelectedClassId('');
+          setSelectedClass(null);
           setStudents([]);
         } catch (err) {
           setError(t('error_fetching_data'));
@@ -47,14 +48,14 @@ const ProgressPage = () => {
       };
       fetchClasses();
     }
-  }, [selectedTeacherId, t]);
+  }, [selectedTeacher, t]);
 
   useEffect(() => {
-    if (selectedClassId) {
+    if (selectedClass) {
       const fetchStudents = async () => {
         setLoading(true);
         try {
-          const studentData = await getStudentsInClass(selectedClassId);
+          const studentData = await getStudentsInClass(selectedClass.id);
           setStudents(studentData || []);
         } catch (err) {
           setError(t('error_fetching_data'));
@@ -64,7 +65,7 @@ const ProgressPage = () => {
       };
       fetchStudents();
     }
-  }, [selectedClassId, t]);
+  }, [selectedClass, t]);
 
   useEffect(() => {
     setFilteredStudents(
@@ -83,7 +84,7 @@ const ProgressPage = () => {
       });
       setEditingStudent(null);
       // Refetch students to get updated progress
-      const studentData = await getStudentsInClass(selectedClassId);
+      const studentData = await getStudentsInClass(selectedClass.id);
       setStudents(studentData || []);
     } catch (err) {
       setError(t('error_saving_progress'));
@@ -97,33 +98,21 @@ const ProgressPage = () => {
       <div>
         <h1 className="text-2xl font-bold mb-4">{t('manage_progress')}</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="relative">
-            <select
-              onChange={(e) => setSelectedTeacherId(e.target.value)}
-              value={selectedTeacherId}
-              className="w-full appearance-none bg-input border border-border rounded-lg px-4 py-2.5 text-sm pr-8"
-            >
-              <option value="" disabled>{t('select_teacher')}</option>
-              {teachers && teachers.map((t) => (
-                <option key={t.id} value={t.id}>{t.full_name}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              value={selectedClassId}
-              disabled={!selectedTeacherId}
-              className="w-full appearance-none bg-input border border-border rounded-lg px-4 py-2.5 text-sm pr-8"
-            >
-              <option value="" disabled>{t('select_class')}</option>
-              {classes && classes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-          </div>
+          <FilterableDropdown
+            items={teachers}
+            selectedItem={selectedTeacher}
+            onSelectItem={setSelectedTeacher}
+            placeholder={t('select_teacher')}
+            label="full_name"
+          />
+          <FilterableDropdown
+            items={classes}
+            selectedItem={selectedClass}
+            onSelectItem={setSelectedClass}
+            placeholder={t('select_class')}
+            label="name"
+            disabled={!selectedTeacher}
+          />
           <div className="relative">
             <input
               type="text"
@@ -136,7 +125,7 @@ const ProgressPage = () => {
           </div>
         </div>
 
-        {selectedClassId && (
+        {selectedClass && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredStudents.map((student) => (
               <ProgressCard
