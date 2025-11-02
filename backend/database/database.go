@@ -13,8 +13,13 @@ var DB *pgxpool.Pool
 
 // Connect initializes the database connection pool.
 func Connect(databaseURL string) {
-	var err error
-	DB, err = pgxpool.Connect(context.Background(), databaseURL)
+	config, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		log.Fatalf("Unable to parse database URL: %v\n", err)
+	}
+	config.ConnConfig.PreferSimpleProtocol = true
+
+	DB, err = pgxpool.ConnectConfig(context.Background(), config)
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
