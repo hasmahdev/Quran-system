@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('developer', 'admin', 'user', 'teacher', 'student')),
+    phone TEXT,
     progress_surah INT DEFAULT 1,
     progress_ayah INT DEFAULT 1,
     progress_page INT DEFAULT 1

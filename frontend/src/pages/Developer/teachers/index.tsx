@@ -10,7 +10,7 @@ import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Teacher = { id: string; full_name: string; };
+type Teacher = { id: string; full_name: string; phone: string; };
 
 export default function TeachersPage() {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export default function TeachersPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
   const [deletingTeacherId, setDeletingTeacherId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', password: '' });
+  const [formData, setFormData] = useState({ full_name: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,7 +41,7 @@ export default function TeachersPage() {
 
   const openModal = (teacher: Teacher | null = null) => {
     setEditingTeacher(teacher);
-    setFormData({ full_name: teacher ? teacher.full_name : '', password: '' });
+    setFormData({ full_name: teacher ? teacher.full_name : '', password: '', phone: teacher ? teacher.phone : '' });
     setIsModalOpen(true);
   };
 
@@ -72,10 +72,11 @@ export default function TeachersPage() {
         full_name: formData.full_name,
         password: formData.password,
         role: 'teacher',
+        phone: formData.phone,
       };
 
       if (editingTeacher) {
-        await updateUser(editingTeacher.id, { full_name: teacherData.full_name });
+        await updateUser(editingTeacher.id, { full_name: teacherData.full_name, phone: teacherData.phone });
       } else {
         await createUser(teacherData);
       }
@@ -138,6 +139,7 @@ export default function TeachersPage() {
                   </button>
                 </div>
               </div>
+              <p className="text-muted">{teacher.phone}</p>
             </Card>
           ))}
         </div>
@@ -153,6 +155,10 @@ export default function TeachersPage() {
           <div>
             <label htmlFor="full_name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
             <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          </div>
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-muted mb-2">{t('phone')}</label>
+            <input type="text" id="phone" name="phone" value={formData.phone} onChange={handleFormChange} className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-muted mb-2">{t('password')}</label>

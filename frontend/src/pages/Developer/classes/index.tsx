@@ -6,7 +6,7 @@ import Card from '../../../components/shared/Card';
 import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
 import LoadingSpinner from '../../../components/shared/LoadingSpinner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
@@ -26,6 +26,7 @@ export default function ClassesPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredItems, setFilteredItems] = useState<Class[]>([]);
 
   async function load() {
     setLoading(true);
@@ -43,6 +44,19 @@ export default function ClassesPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    let filtered = items;
+    if (selectedTeacher) {
+      filtered = filtered.filter((item) => item.teacher_id === selectedTeacher.id);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    setFilteredItems(filtered);
+  }, [selectedTeacher, searchQuery, items]);
 
   const openModal = (cls: Class | null = null) => {
     setEditingClass(cls);
@@ -113,7 +127,7 @@ export default function ClassesPage() {
         </button>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
           type="text"
           placeholder={t('searchClass')}
@@ -121,6 +135,20 @@ export default function ClassesPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
+        <div className="flex items-center gap-2">
+          <FilterableDropdown
+            items={teachers}
+            selectedItem={selectedTeacher}
+            onSelectItem={setSelectedTeacher}
+            placeholder={t('selectTeacher')}
+            label="full_name"
+          />
+          {selectedTeacher && (
+            <button onClick={() => setSelectedTeacher(null)} className="p-2 bg-gray-200 rounded-lg">
+              <X size={20} />
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
@@ -129,7 +157,7 @@ export default function ClassesPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.filter(cls => cls.name && cls.name.toLowerCase().includes(searchQuery.toLowerCase())).map((cls) => (
+          {filteredItems.map((cls) => (
             <Card key={cls.id}>
               <div className="flex justify-between items-start gap-2">
                 <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{cls.name}</h3>

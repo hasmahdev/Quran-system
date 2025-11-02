@@ -26,7 +26,6 @@ export default function ClassesPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   async function load() {
-    if (!user?.id) return;
     setLoading(true);
     try {
       if (user) {

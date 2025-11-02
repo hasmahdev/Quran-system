@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
+import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress, getClasses } from '../../../lib/api';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
-import { Search } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import ErrorDisplay from '../../../components/shared/ErrorDisplay';
 import ProgressCard from '../../../components/shared/ProgressCard';
 import EditProgressDialog from '../../../components/shared/EditProgressDialog';
@@ -23,57 +23,49 @@ const ProgressPage = () => {
   const [editingStudent, setEditingStudent] = useState<any | null>(null);
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchData = async () => {
       try {
-        const teacherData = await getUsersByRole('teacher');
+        const [teacherData, classData, studentData] = await Promise.all([
+          getUsersByRole('teacher'),
+          getClasses(),
+          getUsersByRole('student'),
+        ]);
         setTeachers(teacherData || []);
+        setClasses(classData || []);
+        setStudents(studentData || []);
+        setFilteredStudents(studentData || []);
       } catch (err) {
         setError(t('error_fetching_data'));
       }
     };
-    fetchTeachers();
+    fetchData();
   }, [t]);
 
   useEffect(() => {
+    let filtered = students;
     if (selectedTeacher) {
-      const fetchClasses = async () => {
-        try {
-          const classData = await getClassesByTeacher(selectedTeacher.id);
-          setClasses(classData || []);
-          setSelectedClass(null);
-          setStudents([]);
-        } catch (err) {
-          setError(t('error_fetching_data'));
-        }
-      };
-      fetchClasses();
+      const teacherClasses = classes.filter((c) => c.teacher_id === selectedTeacher.id);
+      const studentIds = teacherClasses.flatMap((c) => getStudentsInClass(c.id));
+      Promise.all(studentIds).then((res) => {
+        const ids = res.flat().map((s: any) => s.id);
+        filtered = filtered.filter((student) => ids.includes(student.id));
+        setFilteredStudents(filtered);
+      });
     }
-  }, [selectedTeacher, t]);
-
-  useEffect(() => {
     if (selectedClass) {
-      const fetchStudents = async () => {
-        setLoading(true);
-        try {
-          const studentData = await getStudentsInClass(selectedClass.id);
-          setStudents(studentData || []);
-        } catch (err) {
-          setError(t('error_fetching_data'));
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchStudents();
+      getStudentsInClass(selectedClass.id).then((res) => {
+        const ids = res.map((s: any) => s.id);
+        filtered = filtered.filter((student) => ids.includes(student.id));
+        setFilteredStudents(filtered);
+      });
     }
-  }, [selectedClass, t]);
-
-  useEffect(() => {
-    setFilteredStudents(
-      students.filter(student =>
-        student.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-  }, [searchTerm, students]);
+    if (searchTerm) {
+      filtered = filtered.filter((item) =>
+        item.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    setFilteredStudents(filtered);
+  }, [selectedTeacher, selectedClass, searchTerm, students]);
 
   const handleSaveProgress = async (updatedProgress: any) => {
     try {
@@ -125,17 +117,15 @@ const ProgressPage = () => {
           </div>
         </div>
 
-        {selectedClass && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredStudents.map((student) => (
-              <ProgressCard
-                key={student.id}
-                student={student}
-                onEdit={() => setEditingStudent(student)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredStudents.map((student) => (
+            <ProgressCard
+              key={student.id}
+              student={student}
+              onEdit={() => setEditingStudent(student)}
+            />
+          ))}
+        </div>
 
         {editingStudent && (
           <EditProgressDialog

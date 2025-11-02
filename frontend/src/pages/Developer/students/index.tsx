@@ -7,14 +7,20 @@ import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
 import PasswordInput from '../../../components/shared/PasswordInput';
 import LoadingSpinner from '../../../components/shared/LoadingSpinner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, X, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getClasses, getStudentsInClass, addStudentToClass } from '../../../lib/api';
+import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
 type Student = { id: string; full_name: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Teacher = { id: string; full_name: string; };
+type Class = { id: string; name: string; teacher_id: string; };
 
 export default function StudentsPage() {
   const { t } = useTranslation();
   const [items, setItems] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -23,12 +29,24 @@ export default function StudentsPage() {
   const [formData, setFormData] = useState({ full_name: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [filteredItems, setFilteredItems] = useState<Student[]>([]);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedClassToAssign, setSelectedClassToAssign] = useState<Class | null>(null);
 
   async function load() {
     setLoading(true);
     try {
-      const data = await getUsersByRole('student');
-      setItems(data || []);
+      const [studentData, teacherData, classData] = await Promise.all([
+        getUsersByRole('student'),
+        getUsersByRole('teacher'),
+        getClasses(),
+      ]);
+      setItems(studentData || []);
+      setTeachers(teacherData || []);
+      setClasses(classData || []);
     } catch (err: any) {
       setError(err.message);
     }
@@ -38,6 +56,32 @@ export default function StudentsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    let filtered = items;
+    if (selectedTeacher) {
+      const teacherClasses = classes.filter((c) => c.teacher_id === selectedTeacher.id);
+      const studentIds = teacherClasses.flatMap((c) => getStudentsInClass(c.id));
+      Promise.all(studentIds).then((res) => {
+        const ids = res.flat().map((s: any) => s.id);
+        filtered = filtered.filter((student) => ids.includes(student.id));
+        setFilteredItems(filtered);
+      });
+    }
+    if (selectedClass) {
+      getStudentsInClass(selectedClass.id).then((res) => {
+        const ids = res.map((s: any) => s.id);
+        filtered = filtered.filter((student) => ids.includes(student.id));
+        setFilteredItems(filtered);
+      });
+    }
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        item.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    setFilteredItems(filtered);
+  }, [selectedTeacher, selectedClass, searchQuery, items]);
 
   const openModal = (student: Student | null = null) => {
     setEditingStudent(student);
@@ -69,13 +113,12 @@ export default function StudentsPage() {
     setError(null);
     try {
       const studentData = {
-        full_name: formData.full_name,
-        password: formData.password,
+        ...formData,
         role: 'student',
       };
 
       if (editingStudent) {
-        await updateUser(editingStudent.id, { full_name: studentData.full_name });
+        await updateUser(editingStudent.id, { full_name: studentData.full_name, phone: studentData.phone });
       } else {
         await createUser(studentData);
       }
@@ -83,6 +126,27 @@ export default function StudentsPage() {
       closeModal();
     } catch (e: any) {
       setError(e.message || 'Failed to save student');
+    }
+  };
+
+  const openAssignModal = (student: Student) => {
+    setSelectedStudent(student);
+    setIsAssignModalOpen(true);
+  };
+
+  const closeAssignModal = () => {
+    setSelectedStudent(null);
+    setIsAssignModalOpen(false);
+  };
+
+  const handleAssignStudent = async () => {
+    if (selectedStudent && selectedClassToAssign) {
+      try {
+        await addStudentToClass(selectedClassToAssign.id, selectedStudent.id);
+        closeAssignModal();
+      } catch (e: any) {
+        setError(e.message || 'Failed to assign student');
+      }
     }
   };
 
@@ -109,7 +173,7 @@ export default function StudentsPage() {
         </button>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <input
           type="text"
           placeholder={t('searchStudent')}
@@ -117,6 +181,34 @@ export default function StudentsPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
+        <div className="flex items-center gap-2">
+          <FilterableDropdown
+            items={teachers}
+            selectedItem={selectedTeacher}
+            onSelectItem={setSelectedTeacher}
+            placeholder={t('selectTeacher')}
+            label="full_name"
+          />
+          {selectedTeacher && (
+            <button onClick={() => setSelectedTeacher(null)} className="p-2 bg-gray-200 rounded-lg">
+              <X size={20} />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <FilterableDropdown
+            items={classes}
+            selectedItem={selectedClass}
+            onSelectItem={setSelectedClass}
+            placeholder={t('selectClass')}
+            label="name"
+          />
+          {selectedClass && (
+            <button onClick={() => setSelectedClass(null)} className="p-2 bg-gray-200 rounded-lg">
+              <X size={20} />
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
@@ -125,7 +217,7 @@ export default function StudentsPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.filter(student => student.full_name && student.full_name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+          {filteredItems.map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
                 <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.full_name}</h3>
@@ -135,6 +227,9 @@ export default function StudentsPage() {
                   </button>
                   <button onClick={() => openConfirmModal(student.id)} className="text-muted hover:text-red-500 transition-colors">
                     <Trash2 size={18} />
+                  </button>
+                  <button onClick={() => openAssignModal(student)} className="text-muted hover:text-text transition-colors">
+                    <UserPlus size={18} />
                   </button>
                 </div>
               </div>
@@ -150,6 +245,27 @@ export default function StudentsPage() {
           ))}
         </div>
       )}
+
+      <Modal
+        isOpen={isAssignModalOpen}
+        onClose={closeAssignModal}
+        title={t('assignStudentToClass')}
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-4">
+          <FilterableDropdown
+            items={classes}
+            selectedItem={selectedClassToAssign}
+            onSelectItem={setSelectedClassToAssign}
+            placeholder={t('selectClass')}
+            label="name"
+          />
+          <div className="flex justify-end gap-4">
+            <button onClick={closeAssignModal} className="bg-gray-200 p-2 rounded-lg">{t('cancel')}</button>
+            <button onClick={handleAssignStudent} className="bg-primary text-white p-2 rounded-lg">{t('assign')}</button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         isOpen={isModalOpen}
