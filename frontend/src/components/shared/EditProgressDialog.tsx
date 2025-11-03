@@ -19,6 +19,7 @@ const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClos
   const handleSave = () => {
     if (surah) {
       onSave({
+        studentId: student.id,
         progressId: student.progress_id,
         surah: surah.id,
         ayah,

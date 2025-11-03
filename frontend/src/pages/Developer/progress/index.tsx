@@ -102,6 +102,12 @@ const ProgressPage = () => {
     <AdminLayout loading={loading}>
       <div>
         <h1 className="text-2xl font-bold mb-4">{t('manage_progress')}</h1>
+        {!selectedClass && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+            <p className="font-bold">{t('notice')}</p>
+            <p>{t('select_class_to_edit_progress')}</p>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <FilterableDropdown
             items={teachers}

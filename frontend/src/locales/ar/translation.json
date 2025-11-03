@@ -102,5 +102,8 @@
   "select_a_student": "اختر طالبًا",
   "assignStudentToClass": "تعيين طالب إلى فصل",
   "class": "الفصل",
-  "select_surah": "اختر سورة"
+  "select_surah": "اختر سورة",
+  "selectClass": "اختر فصلًا",
+  "notice": "تنبيه",
+  "select_class_to_edit_progress": "الرجاء تحديد فصل لتعديل تقدم الطالب."
 }
