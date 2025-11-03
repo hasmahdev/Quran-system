@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress, getClasses } from '../../../lib/api';
+import { getUsersByRole, getClassesByTeacher, getStudentsInClass, updateStudentProgress, getClasses, createStudentProgress } from '../../../lib/api';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import withAuth from '../../../components/withAuth';
 import { ChevronDown, Search } from 'lucide-react';
@@ -69,11 +69,19 @@ const ProgressPage = () => {
 
   const handleSaveProgress = async (updatedProgress: any) => {
     try {
-      await updateStudentProgress(updatedProgress.progressId, {
+      const progressData = {
         surah: updatedProgress.surah,
         ayah: updatedProgress.ayah,
         page: updatedProgress.page,
-      });
+        student_id: updatedProgress.studentId,
+        class_id: selectedClass.id,
+      };
+
+      if (typeof updatedProgress.progressId === 'number' && updatedProgress.progressId > 0) {
+        await updateStudentProgress(String(updatedProgress.progressId), progressData);
+      } else {
+        await createStudentProgress(progressData);
+      }
       setEditingStudent(null);
       // Refetch students to get updated progress
       const studentData = await getStudentsInClass(selectedClass.id);
