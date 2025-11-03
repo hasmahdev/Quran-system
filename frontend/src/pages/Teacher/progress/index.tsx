@@ -75,7 +75,7 @@ export default function ProgressPage() {
         class_id: parseInt(selectedClassId, 10),
       };
 
-      if (editingStudent.progress_id) {
+      if (typeof editingStudent.progress_id === 'number' && editingStudent.progress_id > 0) {
         await updateStudentProgress(String(editingStudent.progress_id), progressData);
       } else {
         await createStudentProgress(progressData);
