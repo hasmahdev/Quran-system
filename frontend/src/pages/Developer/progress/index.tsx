@@ -68,6 +68,10 @@ const ProgressPage = () => {
   }, [selectedTeacher, selectedClass, searchTerm, students]);
 
   const handleSaveProgress = async (updatedProgress: any) => {
+    if (!selectedClass) {
+      setError(t('error_no_class_selected'));
+      return;
+    }
     try {
       const progressData = {
         surah: updatedProgress.surah,
@@ -132,6 +136,7 @@ const ProgressPage = () => {
               key={student.id}
               student={student}
               onEdit={() => setEditingStudent(student)}
+              disabled={!selectedClass}
             />
           ))}
         </div>
