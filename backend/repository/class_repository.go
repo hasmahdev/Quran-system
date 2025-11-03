@@ -82,12 +82,12 @@ func (r *pgxClassRepository) Delete(ctx context.Context, id int) error {
 
 func (r *pgxClassRepository) FindStudentsByClassID(ctx context.Context, classID int) ([]models.StudentWithProgress, error) {
 	query := `
-        SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
-        FROM users u
-        JOIN class_members cm ON u.id = cm.student_id
-        LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
-        WHERE cm.class_id = $1
-    `
+		SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
+		FROM users u
+		JOIN class_members cm ON u.id = cm.student_id
+		LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
+		WHERE cm.class_id = $1
+	`
 	rows, err := r.db.Query(ctx, query, classID)
 	if err != nil {
 		return nil, err
@@ -97,9 +97,14 @@ func (r *pgxClassRepository) FindStudentsByClassID(ctx context.Context, classID 
 	var students []models.StudentWithProgress
 	for rows.Next() {
 		var student models.StudentWithProgress
-		if err := rows.Scan(&student.ID, &student.Username, &student.Role, &student.ProgressID, &student.Surah, &student.Ayah, &student.Page); err != nil {
+		var progressID, surah, ayah, page *int
+		if err := rows.Scan(&student.ID, &student.Username, &student.Role, &progressID, &surah, &ayah, &page); err != nil {
 			return nil, err
 		}
+		student.ProgressID = progressID
+		student.Surah = surah
+		student.Ayah = ayah
+		student.Page = page
 		students = append(students, student)
 	}
 	return students, nil
@@ -124,9 +129,14 @@ func (r *pgxClassRepository) FindStudentByClassAndStudentID(ctx context.Context,
         WHERE cm.class_id = $1 AND u.id = $2
     `
 	var student models.StudentWithProgress
-	err := r.db.QueryRow(ctx, query, classID, studentID).Scan(&student.ID, &student.Username, &student.Role, &student.ProgressID, &student.Surah, &student.Ayah, &student.Page)
+	var progressID, surah, ayah, page *int
+	err := r.db.QueryRow(ctx, query, classID, studentID).Scan(&student.ID, &student.Username, &student.Role, &progressID, &surah, &ayah, &page)
 	if err != nil {
 		return nil, err
 	}
+	student.ProgressID = progressID
+	student.Surah = surah
+	student.Ayah = ayah
+	student.Page = page
 	return &student, nil
 }

@@ -76,7 +76,7 @@ export default function ProgressPage() {
       };
 
       if (editingStudent.progress_id) {
-        await updateStudentProgress(editingStudent.progress_id, progressData);
+        await updateStudentProgress(String(editingStudent.progress_id), progressData);
       } else {
         await createStudentProgress(progressData);
       }
