@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -54,6 +55,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
+	log.Printf("Received request to update user with ID %d. Body: %+v", id, user)
 
 	updatedUser, err := h.service.UpdateUser(c.Context(), id, &user)
 	if err != nil {
