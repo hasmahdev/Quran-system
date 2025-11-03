@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/kolind-am/quran-project/backend/models"
@@ -53,14 +54,40 @@ func (r *pgxUserRepository) CreateUser(ctx context.Context, user *models.User) e
 
 // UpdateUser updates an existing user in the database.
 func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error) {
-	query := `
-		UPDATE users
-		SET username=$1, role=$2, phone=$3
-		WHERE id=$4
-		RETURNING id, username, role, phone
-	`
+	// Start building the query
+	query := "UPDATE users SET"
+	var args []interface{}
+	argId := 1
+
+	if user.Username != "" {
+		query += " username=$" + strconv.Itoa(argId)
+		args = append(args, user.Username)
+		argId++
+	}
+
+	if user.Role != "" {
+		query += ", role=$" + strconv.Itoa(argId)
+		args = append(args, user.Role)
+		argId++
+	}
+
+	if user.Phone != nil {
+		query += ", phone=$" + strconv.Itoa(argId)
+		args = append(args, *user.Phone)
+		argId++
+	}
+
+	if user.Password != "" {
+		query += ", password=$" + strconv.Itoa(argId)
+		args = append(args, user.Password)
+		argId++
+	}
+
+	query += " WHERE id=$" + strconv.Itoa(argId) + " RETURNING id, username, role, phone"
+	args = append(args, id)
+
 	updatedUser := &models.User{}
-	err := r.db.QueryRow(ctx, query, user.Username, user.Role, user.Phone, id).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone)
+	err := r.db.QueryRow(ctx, query, args...).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone)
 	if err != nil {
 		return nil, err
 	}

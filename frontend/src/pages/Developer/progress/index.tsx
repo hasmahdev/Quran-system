@@ -87,6 +87,7 @@ const ProgressPage = () => {
       const studentData = await getStudentsInClass(selectedClass.id);
       setStudents(studentData || []);
     } catch (err) {
+      console.error("Failed to save progress:", err);
       setError(t('error_saving_progress'));
     }
   };

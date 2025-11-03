@@ -47,7 +47,13 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) error {
 
 // UpdateUser handles the business logic for updating a user.
 func (s *userService) UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error) {
-	// Add any validation or business logic before updating.
+	if user.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		user.Password = string(hashedPassword)
+	}
 	return s.repo.UpdateUser(ctx, id, user)
 }
 

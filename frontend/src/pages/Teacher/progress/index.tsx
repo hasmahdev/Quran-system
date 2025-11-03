@@ -86,6 +86,7 @@ export default function ProgressPage() {
       setTimeout(() => setSuccess(false), 2000);
       closeModal();
     } catch (e: any) {
+      console.error("Failed to save progress:", e);
       setError(e.message || 'Failed to save progress');
     }
   };
