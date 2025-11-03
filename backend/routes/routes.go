@@ -62,6 +62,7 @@ func SetupRoutes(app *fiber.App, jwtSecret string) {
 
 	// Progress Management
 	api.Get("/classes/:classId/progress", progressHandler.GetClassProgress)
+	api.Post("/progress", progressHandler.CreateProgress)
 	api.Put("/progress/:progressId", progressHandler.UpdateProgress)
 
 	// Student Management

@@ -11,6 +11,7 @@ import (
 type ProgressService interface {
 	GetClassProgress(ctx context.Context, classID int) ([]models.Progress, error)
 	UpdateProgress(ctx context.Context, id int, progress *models.Progress) error
+	CreateProgress(ctx context.Context, progress *models.Progress) (*models.Progress, error)
 }
 
 type progressService struct {
@@ -28,4 +29,8 @@ func (s *progressService) GetClassProgress(ctx context.Context, classID int) ([]
 
 func (s *progressService) UpdateProgress(ctx context.Context, id int, progress *models.Progress) error {
 	return s.repo.Update(ctx, id, progress)
+}
+
+func (s *progressService) CreateProgress(ctx context.Context, progress *models.Progress) (*models.Progress, error) {
+	return s.repo.Create(ctx, progress)
 }

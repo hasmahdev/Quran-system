@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getClassesByTeacher, getStudentsInClass, updateStudentProgress } from '../../../lib/api';
+import { getClassesByTeacher, getStudentsInClass, updateStudentProgress, createStudentProgress } from '../../../lib/api';
 import { surahNames, formatProgress } from '../../../utils/quran';
 import AdminLayout from '../../../components/layouts/AdminLayout';
 import Card from '../../../components/shared/Card';
@@ -63,15 +63,24 @@ export default function ProgressPage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingStudent || !editingStudent.progress_id) return;
+    if (!editingStudent) return;
     setError(null);
     setSuccess(false);
     try {
-      await updateStudentProgress(editingStudent.progress_id, {
+      const progressData = {
         surah: formData.surah,
         ayah: formData.ayah,
         page: formData.page,
-      });
+        student_id: editingStudent.id,
+        class_id: selectedClassId,
+      };
+
+      if (editingStudent.progress_id) {
+        await updateStudentProgress(editingStudent.progress_id, progressData);
+      } else {
+        await createStudentProgress(progressData);
+      }
+
       await load();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);

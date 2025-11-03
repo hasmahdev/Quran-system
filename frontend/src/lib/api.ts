@@ -65,6 +65,15 @@ export const getMyData = async () => {
     return handleResponse(response);
 };
 
+export const createStudentProgress = async (progressData: any) => {
+    const response = await fetch(`${API_URL}/progress`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(progressData),
+    });
+    return handleResponse(response);
+};
+
 // Progress Functions
 export const getProgressForClass = async (classId: string) => {
     const response = await fetch(`${API_URL}/classes/${classId}/progress`, {
