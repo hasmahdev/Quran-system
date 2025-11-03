@@ -115,7 +115,7 @@ func (h *ClassHandler) AddClassStudent(c *fiber.Ctx) error {
 
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	teacherId := int(claims["id"].(float64))
+	teacherId := int(claims["user_id"].(float64))
 
 	student, err := h.service.AddStudentToClass(c.Context(), classId, req.StudentID, teacherId)
 	if err != nil {
