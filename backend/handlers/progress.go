@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -53,7 +54,10 @@ func (h *ProgressHandler) CreateProgress(c *fiber.Ctx) error {
 
 // UpdateProgress handles the request to update progress.
 func (h *ProgressHandler) UpdateProgress(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("progressId"))
+	progressId := c.Params("progressId")
+	log.Printf("Received request to update progress with ID: %s", progressId)
+
+	id, err := strconv.Atoi(progressId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid progress ID"})
 	}
