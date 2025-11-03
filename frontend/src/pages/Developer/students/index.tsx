@@ -122,7 +122,7 @@ export default function StudentsPage() {
         }
       } else {
         const newUser = await createUser(studentData);
-        if (selectedClassToAssign) {
+        if (selectedClassToAssign && newUser && newUser.id) {
           await addStudentToClass(selectedClassToAssign.id, newUser.id);
         }
       }

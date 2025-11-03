@@ -63,7 +63,7 @@ export default function ProgressPage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingStudent) return;
+    if (!editingStudent || !editingStudent.progress_id) return;
     setError(null);
     setSuccess(false);
     try {
