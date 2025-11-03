@@ -25,9 +25,10 @@ func main() {
 
 	// Setup CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://quran.ghars.site, http://localhost:3000",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowOrigins:     "https://quran.ghars.site,https://qu.ghars.site, http://localhost:3000",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowCredentials: true,
 	}))
 
 	// Setup routes
