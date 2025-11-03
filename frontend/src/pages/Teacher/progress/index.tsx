@@ -9,7 +9,7 @@ import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 
-type Student = { id: string; name: string; progress_id?: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: number; full_name: string; progress_id?: number | null; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function ProgressPage() {
   const { t } = useTranslation();
@@ -72,7 +72,7 @@ export default function ProgressPage() {
         ayah: formData.ayah,
         page: formData.page,
         student_id: editingStudent.id,
-        class_id: selectedClassId,
+        class_id: parseInt(selectedClassId, 10),
       };
 
       if (editingStudent.progress_id) {
@@ -124,10 +124,10 @@ export default function ProgressPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {students.filter(student => student.name && student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+          {students.filter(student => student.full_name && student.full_name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.full_name}</h3>
                 <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
                   <Edit size={18} />
                 </button>
@@ -143,7 +143,7 @@ export default function ProgressPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={`${t('editProgressFor')} ${editingStudent?.name}`}
+        title={`${t('editProgressFor')} ${editingStudent?.full_name}`}
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
