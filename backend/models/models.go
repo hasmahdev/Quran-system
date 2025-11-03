@@ -12,7 +12,7 @@ type User struct {
 // StudentWithProgress represents a student with their progress information.
 type StudentWithProgress struct {
 	ID         int    `json:"id"`
-	FullName   string `json:"full_name"`
+	Username   string `json:"full_name"`
 	Role       string `json:"role"`
 	ProgressID *int   `json:"progress_id"`
 	Surah      *int   `json:"surah"`
