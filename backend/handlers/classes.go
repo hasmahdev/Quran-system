@@ -107,6 +107,12 @@ func (h *ClassHandler) AddClassStudent(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
+
+	// Validate student_id
+	if req.StudentID <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "student_id is required and must be a positive integer"})
+	}
+
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	teacherId := int(claims["id"].(float64))
