@@ -37,11 +37,6 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
 
-	// Make sure full_name is set, if not, use username
-	if user.FullName == nil || *user.FullName == "" {
-		user.FullName = &user.Username
-	}
-
 	if err := h.service.CreateUser(c.Context(), &user); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create user"})
 	}

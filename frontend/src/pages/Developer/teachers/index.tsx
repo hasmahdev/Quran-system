@@ -10,7 +10,7 @@ import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Teacher = { id: string; full_name: string; phone: string; };
+type Teacher = { id: string; username: string; phone: string; };
 
 export default function TeachersPage() {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export default function TeachersPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
   const [deletingTeacherId, setDeletingTeacherId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', password: '', phone: '' });
+  const [formData, setFormData] = useState({ username: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,7 +41,7 @@ export default function TeachersPage() {
 
   const openModal = (teacher: Teacher | null = null) => {
     setEditingTeacher(teacher);
-    setFormData({ full_name: teacher ? teacher.full_name : '', password: '', phone: teacher ? teacher.phone : '' });
+    setFormData({ username: teacher ? teacher.username : '', password: '', phone: teacher ? teacher.phone : '' });
     setIsModalOpen(true);
   };
 
@@ -69,14 +69,14 @@ export default function TeachersPage() {
     setError(null);
     try {
       const teacherData = {
-        full_name: formData.full_name,
+        username: formData.username,
         password: formData.password,
         role: 'teacher',
         phone: formData.phone,
       };
 
       if (editingTeacher) {
-        await updateUser(editingTeacher.id, { full_name: teacherData.full_name, phone: teacherData.phone });
+        await updateUser(editingTeacher.id, { username: teacherData.username, phone: teacherData.phone });
       } else {
         await createUser(teacherData);
       }
@@ -126,10 +126,10 @@ export default function TeachersPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.filter(teacher => teacher.full_name && teacher.full_name.toLowerCase().includes(searchQuery.toLowerCase())).map((teacher) => (
+          {items.filter(teacher => teacher.username && teacher.username.toLowerCase().includes(searchQuery.toLowerCase())).map((teacher) => (
             <Card key={teacher.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{teacher.full_name}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{teacher.username}</h3>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <button onClick={() => openModal(teacher)} className="text-muted hover:text-text transition-colors">
                     <Edit size={18} />
@@ -153,8 +153,8 @@ export default function TeachersPage() {
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
-            <label htmlFor="full_name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
-            <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label htmlFor="username" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
+            <input type="text" id="username" name="username" value={formData.username} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-muted mb-2">{t('phone')}</label>

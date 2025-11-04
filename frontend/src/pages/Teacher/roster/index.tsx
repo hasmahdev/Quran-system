@@ -18,7 +18,7 @@ const StudentRosterPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [formData, setFormData] = useState({ full_name: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchStudents = async () => {
@@ -83,7 +83,7 @@ const StudentRosterPage = () => {
   };
 
   const filteredStudents = students.filter(student =>
-    student.full_name && student.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+    student.username && student.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) return <AdminLayout><div>{t('loading')}</div></AdminLayout>;
@@ -115,7 +115,7 @@ const StudentRosterPage = () => {
                 <div className="bg-primary/10 p-2 rounded-full mr-4">
                   <User className="text-primary" />
                 </div>
-                <span className="font-semibold">{student.full_name}</span>
+                <span className="font-semibold">{student.username}</span>
               </div>
               <div className="flex justify-end">
                 <button onClick={() => handleOpenConfirm(student)}><Trash2 size={20} /></button>
@@ -129,8 +129,8 @@ const StudentRosterPage = () => {
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="full_name">{t('full_name')}</label>
-              <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
+              <label htmlFor="username">{t('username')}</label>
+              <input type="text" name="username" value={formData.username} onChange={handleChange} className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm" required />
             </div>
             <div>
               <label htmlFor="password">{t('password')}</label>

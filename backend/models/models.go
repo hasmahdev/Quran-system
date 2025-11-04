@@ -4,7 +4,6 @@ package models
 type User struct {
 	ID       int     `json:"id"`
 	Username string  `json:"username"`
-	FullName *string `json:"full_name,omitempty"`
 	Password string  `json:"password,omitempty"` // omitempty to prevent sending it in responses
 	Role     string  `json:"role"`
 	Phone    *string `json:"phone,omitempty"`
@@ -14,7 +13,6 @@ type User struct {
 type StudentWithProgress struct {
 	ID         int    `json:"id"`
 	Username   string `json:"username"`
-	FullName   *string `json:"full_name,omitempty"`
 	Role       string `json:"role"`
 	ProgressID *int   `json:"progress_id"`
 	Surah      *int   `json:"surah"`
