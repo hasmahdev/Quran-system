@@ -3,7 +3,7 @@ package models
 // User represents a user in the system (teacher, student, or admin).
 type User struct {
 	ID       int     `json:"id"`
-	Username string  `json:"full_name"`
+	Username string  `json:"username"`
 	Password string  `json:"password,omitempty"` // omitempty to prevent sending it in responses
 	Role     string  `json:"role"`
 	Phone    *string `json:"phone,omitempty"`
@@ -12,7 +12,7 @@ type User struct {
 // StudentWithProgress represents a student with their progress information.
 type StudentWithProgress struct {
 	ID         int    `json:"id"`
-	Username   string `json:"full_name"`
+	Username   string `json:"username"`
 	Role       string `json:"role"`
 	ProgressID *int   `json:"progress_id"`
 	Surah      *int   `json:"surah"`
