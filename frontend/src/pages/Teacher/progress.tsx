@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getUsersByRole, updateUser } from '@/lib/api';
+import { getStudents, updateUser } from '@/lib/api';
 import { surahNames, formatProgress } from '../../utils/quran';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
@@ -24,7 +24,7 @@ export default function ProgressPage() {
   async function load() {
     setLoading(true);
     try {
-      const data = await getUsersByRole('student');
+      const data = await getStudents();
       setStudents(data || []);
     } catch (error: any) {
       setError(error.message);
