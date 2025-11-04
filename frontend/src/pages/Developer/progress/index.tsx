@@ -61,7 +61,7 @@ const ProgressPage = () => {
     }
     if (searchTerm) {
       filtered = filtered.filter((item) =>
-        item.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     setFilteredStudents(filtered);
@@ -114,7 +114,7 @@ const ProgressPage = () => {
             selectedItem={selectedTeacher}
             onSelectItem={setSelectedTeacher}
             placeholder={t('select_teacher')}
-            label="full_name"
+            label="username"
           />
           <FilterableDropdown
             items={classes}
