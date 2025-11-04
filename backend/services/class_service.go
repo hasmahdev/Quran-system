@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 
 	"github.com/kolind-am/quran-project/backend/models"
 	"github.com/kolind-am/quran-project/backend/repository"
@@ -55,12 +54,9 @@ func (s *classService) GetClassStudents(ctx context.Context, classID int) ([]mod
 }
 
 func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID, teacherId int) (*models.StudentWithProgress, error) {
-	log.Printf("Service: Adding student %d to class %d", studentID, classID)
 	if err := s.classRepo.AddStudentToClass(ctx, classID, studentID); err != nil {
-		log.Printf("Service Error adding student to class: %v", err)
 		return nil, err
 	}
-	log.Printf("Service: Successfully added student to class_members table")
 
 	progress := &models.Progress{
 		StudentID: studentID,
@@ -70,12 +66,9 @@ func (s *classService) AddStudentToClass(ctx context.Context, classID, studentID
 		Page:      1,
 		UpdatedBy: teacherId,
 	}
-	log.Printf("Service: Creating progress record: %+v", progress)
 	if _, err := s.progressRepo.Create(ctx, progress); err != nil {
-		log.Printf("Service Error creating progress: %v", err)
 		return nil, err
 	}
-	log.Printf("Service: Successfully created progress record")
 
 	return s.classRepo.FindStudentByClassAndStudentID(ctx, classID, studentID)
 }
