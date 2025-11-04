@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -117,10 +118,15 @@ func (h *ClassHandler) AddClassStudent(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	teacherId := int(claims["id"].(float64))
 
+	log.Printf("Attempting to add student %d to class %d by teacher %d", req.StudentID, classId, teacherId)
+
 	student, err := h.service.AddStudentToClass(c.Context(), classId, req.StudentID, teacherId)
 	if err != nil {
+		log.Printf("Error adding student to class: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to add student to class"})
 	}
+
+	log.Printf("Successfully added student %d to class %d", req.StudentID, classId)
 	return c.Status(fiber.StatusCreated).JSON(student)
 }
 
