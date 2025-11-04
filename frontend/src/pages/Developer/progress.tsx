@@ -1,19 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getClassesByTeacher, getStudentsInClass, updateStudentProgress, createStudentProgress } from '../../../lib/api';
-import { surahNames, formatProgress } from '../../../utils/quran';
-import AdminLayout from '../../../components/layouts/AdminLayout';
-import Card from '../../../components/shared/Card';
-import Modal from '../../../components/shared/Modal';
-import LoadingSpinner from '../../../components/shared/LoadingSpinner';
+import { getUsersByRole, updateUser } from '@/lib/api';
+import { surahNames, formatProgress } from '../../utils/quran';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../context/AuthContext';
+import AdminLayout from '@/components/layouts/AdminLayout';
 
-type Student = { id: number; username: string; progress_id?: number | null; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function ProgressPage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,29 +20,19 @@ export default function ProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [classes, setClasses] = useState<any[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState('');
 
   async function load() {
     setLoading(true);
     try {
-      if (user) {
-        const classData = await getClassesByTeacher(String(user.id));
-        setClasses(classData || []);
-      }
-      if (selectedClassId) {
-        const data = await getStudentsInClass(selectedClassId);
-        setStudents(data || []);
-      }
-    } catch (err: any) {
-      setError(err.message);
+      const data = await getUsersByRole('student');
+      setStudents(data || []);
+    } catch (error: any) {
+      setError(error.message);
     }
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-  }, [selectedClassId, user]);
+  useEffect(() => { load(); }, []);
 
   const openModal = (student: Student) => {
     setEditingStudent(student);
@@ -67,26 +55,16 @@ export default function ProgressPage() {
     setError(null);
     setSuccess(false);
     try {
-      const progressData = {
-        surah: formData.surah,
-        ayah: formData.ayah,
-        page: formData.page,
-        student_id: editingStudent.id,
-        class_id: parseInt(selectedClassId, 10),
-      };
-
-      if (typeof editingStudent.progress_id === 'number' && editingStudent.progress_id > 0) {
-        await updateStudentProgress(String(editingStudent.progress_id), progressData);
-      } else {
-        await createStudentProgress(progressData);
-      }
-
+      await updateUser(editingStudent.id, {
+        progress_surah: formData.surah,
+        progress_ayah: formData.ayah,
+        progress_page: formData.page,
+      });
       await load();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
       closeModal();
     } catch (e: any) {
-      console.error("Failed to save progress:", e);
       setError(e.message || 'Failed to save progress');
     }
   };
@@ -94,19 +72,6 @@ export default function ProgressPage() {
   return (
     <AdminLayout>
       <h1 className="text-3xl font-bold text-text mb-8">{t('manageProgress')}</h1>
-
-      <div className="mb-6">
-        <select
-          onChange={(e) => setSelectedClassId(e.target.value)}
-          value={selectedClassId}
-          className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-        >
-          <option value="" disabled>{t('select_a_class')}</option>
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
 
       <div className="mb-6">
         <input
@@ -125,10 +90,10 @@ export default function ProgressPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {students.filter(student => student.username && student.username.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+          {students.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.username}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
                 <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
                   <Edit size={18} />
                 </button>
@@ -144,7 +109,7 @@ export default function ProgressPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={`${t('editProgressFor')} ${editingStudent?.username}`}
+        title={`${t('editProgressFor')} ${editingStudent?.name}`}
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
