@@ -11,10 +11,7 @@ import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
 const ProgressPage = () => {
   const { t } = useTranslation();
-  const [teachers, setTeachers] = useState<any[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
-  const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,72 +21,81 @@ const ProgressPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [teacherData, classData, studentData] = await Promise.all([
-          getUsersByRole('teacher'),
+        const [classData, studentData] = await Promise.all([
           getClasses(),
           getUsersByRole('student'),
         ]);
-        setTeachers(teacherData || []);
+        const studentsWithClasses = await Promise.all(
+          studentData.map(async (student: any) => {
+            const studentClasses = await Promise.all(
+              classData.map(async (c: any) => {
+                const studentsInClass = await getStudentsInClass(c.id);
+                return studentsInClass.some((s: any) => s.id === student.id) ? c : null;
+              })
+            );
+            return { ...student, classes: studentClasses.filter(Boolean) };
+          })
+        );
         setClasses(classData || []);
-        setStudents(studentData || []);
-        setFilteredStudents(studentData || []);
+        setStudents(studentsWithClasses || []);
+        setFilteredStudents(studentsWithClasses || []);
       } catch (err) {
         setError(t('error_fetching_data'));
       }
+      setLoading(false);
     };
     fetchData();
   }, [t]);
 
   useEffect(() => {
     let filtered = students;
-    if (selectedTeacher) {
-      const teacherClasses = classes.filter((c) => c.teacher_id === selectedTeacher.id);
-      const studentIds = teacherClasses.flatMap((c) => getStudentsInClass(c.id));
-      Promise.all(studentIds).then((res) => {
-        const ids = res.flat().map((s: any) => s.id);
-        filtered = filtered.filter((student) => ids.includes(student.id));
-        setFilteredStudents(filtered);
-      });
-    }
-    if (selectedClass) {
-      getStudentsInClass(selectedClass.id).then((res) => {
-        const ids = res.map((s: any) => s.id);
-        filtered = filtered.filter((student) => ids.includes(student.id));
-        setFilteredStudents(filtered);
-      });
-    }
     if (searchTerm) {
       filtered = filtered.filter((item) =>
         item.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     setFilteredStudents(filtered);
-  }, [selectedTeacher, selectedClass, searchTerm, students]);
+  }, [searchTerm, students]);
 
   const handleSaveProgress = async (updatedProgress: any) => {
-    if (!selectedClass) {
-      setError(t('error_no_class_selected'));
-      return;
-    }
     try {
-      const progressData = {
-        surah: updatedProgress.surah,
-        ayah: updatedProgress.ayah,
-        page: updatedProgress.page,
-        student_id: updatedProgress.studentId,
-        class_id: selectedClass.id,
-      };
+      if (updatedProgress.classId) {
+        const progressData = {
+          surah: updatedProgress.surah,
+          ayah: updatedProgress.ayah,
+          page: updatedProgress.page,
+          student_id: updatedProgress.studentId,
+          class_id: updatedProgress.classId,
+        };
 
-      if (typeof updatedProgress.progressId === 'number' && updatedProgress.progressId > 0) {
-        await updateStudentProgress(String(updatedProgress.progressId), progressData);
-      } else {
-        await createStudentProgress(progressData);
+        if (typeof updatedProgress.progressId === 'number' && updatedProgress.progressId > 0) {
+          await updateStudentProgress(String(updatedProgress.progressId), progressData);
+        } else {
+          await createStudentProgress(progressData);
+        }
       }
       setEditingStudent(null);
-      // Refetch students to get updated progress
-      const studentData = await getStudentsInClass(selectedClass.id);
-      setStudents(studentData || []);
+      // Refetch all data to get updated progress
+      const [classData, studentData] = await Promise.all([
+        getClasses(),
+        getUsersByRole('student'),
+      ]);
+      const studentsWithClasses = await Promise.all(
+        studentData.map(async (student: any) => {
+          const studentClasses = await Promise.all(
+            classData.map(async (c: any) => {
+              const studentsInClass = await getStudentsInClass(c.id);
+              return studentsInClass.some((s: any) => s.id === student.id) ? c : null;
+            })
+          );
+          return { ...student, classes: studentClasses.filter(Boolean) };
+        })
+      );
+      setClasses(classData || []);
+      setStudents(studentsWithClasses || []);
+      setFilteredStudents(studentsWithClasses || []);
     } catch (err) {
       console.error("Failed to save progress:", err);
       setError(t('error_saving_progress'));
@@ -102,28 +108,7 @@ const ProgressPage = () => {
     <AdminLayout loading={loading}>
       <div>
         <h1 className="text-2xl font-bold mb-4">{t('manage_progress')}</h1>
-        {!selectedClass && (
-          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-            <p className="font-bold">{t('notice')}</p>
-            <p>{t('select_class_to_edit_progress')}</p>
-          </div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <FilterableDropdown
-            items={teachers}
-            selectedItem={selectedTeacher}
-            onSelectItem={setSelectedTeacher}
-            placeholder={t('select_teacher')}
-            label="username"
-          />
-          <FilterableDropdown
-            items={classes}
-            selectedItem={selectedClass}
-            onSelectItem={setSelectedClass}
-            placeholder={t('select_class')}
-            label="name"
-            disabled={!selectedTeacher}
-          />
           <div className="relative">
             <input
               type="text"
@@ -141,8 +126,16 @@ const ProgressPage = () => {
             <ProgressCard
               key={student.id}
               student={student}
-              onEdit={() => setEditingStudent(student)}
-              disabled={!selectedClass}
+              onEdit={() => {
+                if (student.classes.length === 0) {
+                  setError(t('error_student_not_in_class'));
+                } else if (student.classes.length === 1) {
+                  setEditingStudent({ ...student, classId: student.classes[0].id });
+                } else {
+                  // Let the user choose which class to edit
+                  setEditingStudent(student);
+                }
+              }}
             />
           ))}
         </div>
@@ -150,6 +143,7 @@ const ProgressPage = () => {
         {editingStudent && (
           <EditProgressDialog
             student={editingStudent}
+            classes={editingStudent.classes}
             onClose={() => setEditingStudent(null)}
             onSave={handleSaveProgress}
           />

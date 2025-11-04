@@ -6,24 +6,27 @@ import FilterableDropdown from './FilterableDropdown';
 
 interface EditProgressDialogProps {
   student: any;
+  classes: any[];
   onClose: () => void;
   onSave: (updatedProgress: any) => void;
 }
 
-const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClose, onSave }) => {
+const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, classes, onClose, onSave }) => {
   const { t } = useTranslation();
+  const [selectedClass, setSelectedClass] = React.useState(classes.length === 1 ? classes[0] : null);
   const [surah, setSurah] = React.useState(surahs.find((s) => s.id === (student.surah || 1)));
   const [ayah, setAyah] = React.useState(student.ayah || 1);
   const [page, setPage] = React.useState(student.page || 1);
 
   const handleSave = () => {
-    if (surah) {
+    if (surah && selectedClass) {
       onSave({
         studentId: student.id,
         progressId: student.progress_id,
         surah: surah.id,
         ayah,
         page,
+        classId: selectedClass.id,
       });
     }
   };
@@ -38,6 +41,18 @@ const EditProgressDialog: React.FC<EditProgressDialogProps> = ({ student, onClos
           </button>
         </div>
         <div className="space-y-4">
+          {classes.length > 1 && (
+            <div>
+              <label className="block text-sm font-medium text-right mb-2">الصف</label>
+              <FilterableDropdown
+                items={classes}
+                selectedItem={selectedClass}
+                onSelectItem={setSelectedClass}
+                placeholder={t('select_class')}
+                label="name"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-right mb-2">السورة</label>
             <FilterableDropdown
