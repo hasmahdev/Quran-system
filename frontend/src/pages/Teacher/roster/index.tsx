@@ -25,12 +25,9 @@ const StudentRosterPage = () => {
     if (classId) {
       setLoading(true);
       try {
-        console.log("Fetching students for class:", classId);
         const data = await getStudentsInClass(classId as string);
-        console.log("Fetched students data:", data);
         setStudents(data || []);
       } catch (err) {
-        console.error("Error fetching students:", err);
         setError(t('error_fetching_students'));
       } finally {
         setLoading(false);
@@ -59,22 +56,16 @@ const StudentRosterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("Submitting form with data:", formData);
       const userData = { ...formData, role: 'student' };
       const newUser = await createUser(userData);
-      console.log("Created new user:", newUser);
 
       if (newUser && newUser.id) {
-        console.log(`Adding user ${newUser.id} to class ${classId}`);
         await addStudentToClass(classId as string, newUser.id);
-        console.log("Successfully added user to class");
       }
 
-      console.log("Re-fetching students after submission");
       fetchStudents();
       handleCloseModal();
     } catch (err) {
-      console.error("Error saving student:", err);
       setError(t('error_saving_student'));
     }
   };

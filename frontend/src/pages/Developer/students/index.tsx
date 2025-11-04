@@ -87,6 +87,17 @@ export default function StudentsPage() {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    if (editingStudent && classes.length > 0) {
+      // Find the class the student is in
+      const studentClass = classes.find((c) => {
+        const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
+        return studentIds.then(ids => ids.includes(editingStudent.id));
+      });
+      setSelectedClassToAssign(studentClass || null);
+    }
+  }, [editingStudent, classes]);
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingStudent(null);
@@ -117,7 +128,20 @@ export default function StudentsPage() {
 
       if (editingStudent) {
         await updateUser(editingStudent.id, { username: studentData.username, phone: studentData.phone });
-        if (selectedClassToAssign) {
+
+        // Find the student's current class
+        const currentClass = classes.find((c) => {
+          const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
+          return studentIds.then(ids => ids.includes(editingStudent.id));
+        });
+
+        if (currentClass && selectedClassToAssign && currentClass.id !== selectedClassToAssign.id) {
+          // Remove from old class
+          await removeStudentFromClass(currentClass.id, editingStudent.id);
+          // Add to new class
+          await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
+        } else if (!currentClass && selectedClassToAssign) {
+          // Just add to new class
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
         }
       } else {

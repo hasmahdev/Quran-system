@@ -26,7 +26,6 @@ func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get users"})
 	}
-	log.Printf("Sending users data: %+v", users)
 	return c.JSON(users)
 }
 
