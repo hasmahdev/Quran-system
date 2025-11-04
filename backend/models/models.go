@@ -18,6 +18,7 @@ type StudentWithProgress struct {
 	Surah      *int   `json:"surah"`
 	Ayah       *int   `json:"ayah"`
 	Page       *int   `json:"page"`
+	ClassName *string `json:"class_name"`
 }
 
 // LoginRequest represents the payload for a login request.

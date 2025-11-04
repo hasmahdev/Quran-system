@@ -9,10 +9,10 @@ import PasswordInput from '../../../components/shared/PasswordInput';
 import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2, X, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getClasses, getStudentsInClass, addStudentToClass } from '../../../lib/api';
+import { getClasses, getStudentsInClass, addStudentToClass, removeStudentFromClass } from '../../../lib/api';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
-type Student = { id: string; username: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: string; username: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null; class_name?: string | null };
 type Teacher = { id: string; username: string; };
 type Class = { id: string; name: string; teacher_id: string; };
 
@@ -245,6 +245,11 @@ export default function StudentsPage() {
               <div className="mt-2 text-sm text-muted">
                 {formatProgress(student.progress_surah, student.progress_ayah, student.progress_page)}
               </div>
+              {student.class_name && (
+                <div className="mt-2 text-sm text-muted">
+                  {t('class')}: {student.class_name}
+                </div>
+              )}
             </Card>
           ))}
         </div>
