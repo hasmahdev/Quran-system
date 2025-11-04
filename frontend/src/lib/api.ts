@@ -57,15 +57,6 @@ export const deleteUser = async (userId: string) => {
 };
 
 // Student Functions
-export const getStudents = async () => {
-  const response = await fetch(`${API_URL}/students`, {
-    headers: getAuthHeaders(),
-    cache: 'no-cache',
-  });
-  const data = await handleResponse(response);
-  return data || [];
-};
-
 export const getMyData = async () => {
     const response = await fetch(`${API_URL}/students/me`, {
         headers: getAuthHeaders(),
