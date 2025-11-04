@@ -57,29 +57,13 @@ export default function StudentsPage() {
 
   useEffect(() => {
     let filtered = items;
-    if (selectedTeacher) {
-      const teacherClasses = classes.filter((c) => c.teacher_id === selectedTeacher.id);
-      const studentIds = teacherClasses.flatMap((c) => getStudentsInClass(c.id));
-      Promise.all(studentIds).then((res) => {
-        const ids = res.flat().map((s: any) => s.id);
-        filtered = filtered.filter((student) => ids.includes(student.id));
-        setFilteredItems(filtered);
-      });
-    }
-    if (selectedClass) {
-      getStudentsInClass(selectedClass.id).then((res) => {
-        const ids = res.map((s: any) => s.id);
-        filtered = filtered.filter((student) => ids.includes(student.id));
-        setFilteredItems(filtered);
-      });
-    }
     if (searchQuery) {
       filtered = filtered.filter((item) =>
         item.username.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     setFilteredItems(filtered);
-  }, [selectedTeacher, selectedClass, searchQuery, items]);
+  }, [searchQuery, items]);
 
   const openModal = (student: Student | null = null) => {
     setEditingStudent(student);
