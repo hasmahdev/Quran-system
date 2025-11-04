@@ -7,6 +7,7 @@ type User struct {
 	Password string  `json:"password,omitempty"` // omitempty to prevent sending it in responses
 	Role     string  `json:"role"`
 	Phone    *string `json:"phone,omitempty"`
+	Classes  []Class `json:"classes,omitempty"`
 }
 
 // StudentWithProgress represents a student with their progress information.

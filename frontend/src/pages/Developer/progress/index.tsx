@@ -23,24 +23,9 @@ const ProgressPage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [classData, studentData] = await Promise.all([
-          getClasses(),
-          getUsersByRole('student'),
-        ]);
-        const studentsWithClasses = await Promise.all(
-          studentData.map(async (student: any) => {
-            const studentClasses = await Promise.all(
-              classData.map(async (c: any) => {
-                const studentsInClass = await getStudentsInClass(c.id);
-                return studentsInClass.some((s: any) => s.id === student.id) ? c : null;
-              })
-            );
-            return { ...student, classes: studentClasses.filter(Boolean) };
-          })
-        );
-        setClasses(classData || []);
-        setStudents(studentsWithClasses || []);
-        setFilteredStudents(studentsWithClasses || []);
+        const studentData = await getUsersByRole('student');
+        setStudents(studentData || []);
+        setFilteredStudents(studentData || []);
       } catch (err) {
         setError(t('error_fetching_data'));
       }

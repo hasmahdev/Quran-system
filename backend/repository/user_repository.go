@@ -29,20 +29,46 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 
 // FindUsersByRole retrieves users from the database filtered by role.
 func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([]models.User, error) {
-	rows, err := r.db.Query(ctx, "SELECT id, username, role, phone FROM users WHERE role=$1", role)
+	query := `
+		SELECT u.id, u.username, u.role, u.phone, c.id, c.name, c.teacher_id
+		FROM users u
+		LEFT JOIN class_members cm ON u.id = cm.student_id
+		LEFT JOIN classes c ON cm.class_id = c.id
+		WHERE u.role = $1
+	`
+	rows, err := r.db.Query(ctx, query, role)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var users []models.User
+	userMap := make(map[int]*models.User)
 	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone); err != nil {
+		var class models.Class
+		var classId, teacherId *int
+		var className *string
+		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone, &classId, &className, &teacherId); err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+
+		if _, ok := userMap[user.ID]; !ok {
+			userMap[user.ID] = &user
+		}
+
+		if classId != nil {
+			class.ID = *classId
+			class.Name = *className
+			class.TeacherID = *teacherId
+			userMap[user.ID].Classes = append(userMap[user.ID].Classes, class)
+		}
 	}
+
+	var users []models.User
+	for _, user := range userMap {
+		users = append(users, *user)
+	}
+
 	return users, nil
 }
 

@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { getClasses, getStudentsInClass, addStudentToClass, removeStudentFromClass } from '../../../lib/api';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
-type Student = { id: string; username: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null; class_name?: string | null };
+type Student = { id: string; username: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null; classes?: any[] | null };
 type Teacher = { id: string; username: string; };
 type Class = { id: string; name: string; teacher_id: string; };
 
@@ -245,9 +245,9 @@ export default function StudentsPage() {
               <div className="mt-2 text-sm text-muted">
                 {formatProgress(student.progress_surah, student.progress_ayah, student.progress_page)}
               </div>
-              {student.class_name && (
+              {student.classes && student.classes.length > 0 && (
                 <div className="mt-2 text-sm text-muted">
-                  {t('class')}: {student.class_name}
+                  {t('classes')}: {student.classes.map((c: any) => c.name).join(', ')}
                 </div>
               )}
             </Card>
