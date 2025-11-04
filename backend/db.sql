@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
+    full_name TEXT,
     password TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('developer', 'admin', 'user', 'teacher', 'student')),
     phone TEXT
@@ -9,10 +10,11 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Insert the developer user if they don't exist, or update their password if they do.
 -- This "upsert" command ensures the password is correct without causing errors on re-runs.
-INSERT INTO users (username, password, role) VALUES
-('developer', '$2a$10$Vk5cjiLPNYzNT3UZPfpqJuzHFz0EWC1bHrsao61LiCeTCWy18XdLq', 'developer')
+INSERT INTO users (username, full_name, password, role) VALUES
+('developer', 'Developer User', '$2a$10$Vk5cjiLPNYzNT3UZPfpqJuzHFz0EWC1bHrsao61LiCeTCWy18XdLq', 'developer')
 ON CONFLICT (username) DO UPDATE SET
-password = EXCLUDED.password;
+password = EXCLUDED.password,
+full_name = EXCLUDED.full_name;
 
 -- Create the classes table if it doesn't already exist
 CREATE TABLE IF NOT EXISTS classes (

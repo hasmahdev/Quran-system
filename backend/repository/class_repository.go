@@ -82,7 +82,7 @@ func (r *pgxClassRepository) Delete(ctx context.Context, id int) error {
 
 func (r *pgxClassRepository) FindStudentsByClassID(ctx context.Context, classID int) ([]models.StudentWithProgress, error) {
 	query := `
-		SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
+		SELECT u.id, u.username, u.full_name, u.role, p.id, p.surah, p.ayah, p.page
 		FROM users u
 		JOIN class_members cm ON u.id = cm.student_id
 		LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
@@ -98,7 +98,7 @@ func (r *pgxClassRepository) FindStudentsByClassID(ctx context.Context, classID 
 	for rows.Next() {
 		var student models.StudentWithProgress
 		var progressID, surah, ayah, page *int
-		if err := rows.Scan(&student.ID, &student.Username, &student.Role, &progressID, &surah, &ayah, &page); err != nil {
+		if err := rows.Scan(&student.ID, &student.Username, &student.FullName, &student.Role, &progressID, &surah, &ayah, &page); err != nil {
 			return nil, err
 		}
 		student.ProgressID = progressID
@@ -122,7 +122,7 @@ func (r *pgxClassRepository) RemoveStudentFromClass(ctx context.Context, classID
 
 func (r *pgxClassRepository) FindStudentByClassAndStudentID(ctx context.Context, classID, studentID int) (*models.StudentWithProgress, error) {
 	query := `
-        SELECT u.id, u.username, u.role, p.id, p.surah, p.ayah, p.page
+        SELECT u.id, u.username, u.full_name, u.role, p.id, p.surah, p.ayah, p.page
         FROM users u
         JOIN class_members cm ON u.id = cm.student_id
         LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
@@ -130,7 +130,7 @@ func (r *pgxClassRepository) FindStudentByClassAndStudentID(ctx context.Context,
     `
 	var student models.StudentWithProgress
 	var progressID, surah, ayah, page *int
-	err := r.db.QueryRow(ctx, query, classID, studentID).Scan(&student.ID, &student.Username, &student.Role, &progressID, &surah, &ayah, &page)
+	err := r.db.QueryRow(ctx, query, classID, studentID).Scan(&student.ID, &student.Username, &student.FullName, &student.Role, &progressID, &surah, &ayah, &page)
 	if err != nil {
 		return nil, err
 	}

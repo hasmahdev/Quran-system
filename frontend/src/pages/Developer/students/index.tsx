@@ -12,8 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { getClasses, getStudentsInClass, addStudentToClass } from '../../../lib/api';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
-type Student = { id: string; username: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
-type Teacher = { id: string; username: string; };
+type Student = { id: string; full_name: string; phone: string | null; password_hash: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Teacher = { id: string; full_name: string; };
 type Class = { id: string; name: string; teacher_id: string; };
 
 export default function StudentsPage() {
@@ -26,7 +26,7 @@ export default function StudentsPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ username: '', password: '', phone: '' });
+  const [formData, setFormData] = useState({ full_name: '', password: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -75,7 +75,7 @@ export default function StudentsPage() {
     }
     if (searchQuery) {
       filtered = filtered.filter((item) =>
-        item.username.toLowerCase().includes(searchQuery.toLowerCase())
+        item.full_name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     setFilteredItems(filtered);
@@ -83,7 +83,7 @@ export default function StudentsPage() {
 
   const openModal = (student: Student | null = null) => {
     setEditingStudent(student);
-    setFormData({ username: student ? student.username : '', password: '', phone: student ? student.phone || '' : '' });
+    setFormData({ full_name: student ? student.full_name : '', password: '', phone: student ? student.phone || '' : '' });
     setIsModalOpen(true);
   };
 
@@ -116,7 +116,7 @@ export default function StudentsPage() {
       };
 
       if (editingStudent) {
-        await updateUser(editingStudent.id, { username: studentData.username, phone: studentData.phone });
+        await updateUser(editingStudent.id, { full_name: studentData.full_name, phone: studentData.phone });
         if (selectedClassToAssign) {
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
         }
@@ -170,7 +170,7 @@ export default function StudentsPage() {
             selectedItem={selectedTeacher}
             onSelectItem={setSelectedTeacher}
             placeholder={t('selectTeacher')}
-            label="username"
+            label="full_name"
           />
           {selectedTeacher && (
             <button onClick={() => setSelectedTeacher(null)} className="p-2 bg-gray-200 rounded-lg">
@@ -203,7 +203,7 @@ export default function StudentsPage() {
           {filteredItems.map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.username}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.full_name}</h3>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
                     <Edit size={18} />
@@ -234,8 +234,8 @@ export default function StudentsPage() {
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
-            <input type="text" id="username" name="username" value={formData.username} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label htmlFor="full_name" className="block text-sm font-medium text-muted mb-2">{t('name')}</label>
+            <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleFormChange} required className="w-full bg-white border border-border text-text p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <div>
              <label htmlFor="phone" className="block text-sm font-medium text-muted mb-2">{t('phone')}</label>

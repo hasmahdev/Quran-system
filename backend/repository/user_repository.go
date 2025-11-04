@@ -29,7 +29,7 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 
 // FindUsersByRole retrieves users from the database filtered by role.
 func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([]models.User, error) {
-	rows, err := r.db.Query(ctx, "SELECT id, username, role, phone FROM users WHERE role=$1", role)
+	rows, err := r.db.Query(ctx, "SELECT id, username, full_name, role, phone FROM users WHERE role=$1", role)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Role, &user.Phone); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -48,7 +48,7 @@ func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([
 
 // CreateUser inserts a new user into the database.
 func (r *pgxUserRepository) CreateUser(ctx context.Context, user *models.User) error {
-	_, err := r.db.Exec(ctx, "INSERT INTO users (username, password, role, phone) VALUES ($1, $2, $3, $4)", user.Username, user.Password, user.Role, user.Phone)
+	_, err := r.db.Exec(ctx, "INSERT INTO users (username, full_name, password, role, phone) VALUES ($1, $2, $3, $4, $5)", user.Username, user.FullName, user.Password, user.Role, user.Phone)
 	return err
 }
 
@@ -62,6 +62,12 @@ func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models
 	if user.Username != "" {
 		query += " username=$" + strconv.Itoa(argId)
 		args = append(args, user.Username)
+		argId++
+	}
+
+	if user.FullName != nil {
+		query += ", full_name=$" + strconv.Itoa(argId)
+		args = append(args, *user.FullName)
 		argId++
 	}
 
@@ -103,7 +109,7 @@ func (r *pgxUserRepository) DeleteUser(ctx context.Context, id int) error {
 // FindUserByUsername retrieves a single user by their username.
 func (r *pgxUserRepository) FindUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	err := r.db.QueryRow(ctx, "SELECT id, username, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.Username, &user.Password, &user.Role, &user.Phone)
+	err := r.db.QueryRow(ctx, "SELECT id, username, full_name, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.Username, &user.FullName, &user.Password, &user.Role, &user.Phone)
 	if err != nil {
 		return nil, err
 	}

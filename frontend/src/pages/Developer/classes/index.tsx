@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
 
 type Class = { id: string; name: string; teacher_id: string; };
-type Teacher = { id: string; username: string; };
+type Teacher = { id: string; full_name: string; };
 
 export default function ClassesPage() {
   const { t } = useTranslation();
@@ -141,7 +141,7 @@ export default function ClassesPage() {
             selectedItem={selectedTeacher}
             onSelectItem={setSelectedTeacher}
             placeholder={t('selectTeacher')}
-            label="username"
+            label="full_name"
           />
           {selectedTeacher && (
             <button onClick={() => setSelectedTeacher(null)} className="p-2 bg-gray-200 rounded-lg">
@@ -171,7 +171,7 @@ export default function ClassesPage() {
                 </div>
               </div>
               <div className="mt-2 text-sm text-muted">
-                {t('teacher')}: {teachers.find(t => t.id === cls.teacher_id)?.username || 'N/A'}
+                {t('teacher')}: {teachers.find(t => t.id === cls.teacher_id)?.full_name || 'N/A'}
               </div>
             </Card>
           ))}
@@ -196,7 +196,7 @@ export default function ClassesPage() {
               selectedItem={selectedTeacher}
               onSelectItem={setSelectedTeacher}
               placeholder={t('selectTeacher')}
-              label="username"
+              label="full_name"
             />
           </div>
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
