@@ -8,7 +8,7 @@ import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '@/components/layouts/AdminLayout';
 
-type Student = { id: string; name: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
+type Student = { id: string; username: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
 export default function ProgressPage() {
   const { t } = useTranslation();
@@ -90,10 +90,10 @@ export default function ProgressPage() {
         <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {students.filter(student => student.name && student.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+          {students.filter(student => student.username && student.username.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
             <Card key={student.id}>
               <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.name}</h3>
+                <h3 className="text-lg font-bold text-text flex-1 min-w-0 break-words">{student.username}</h3>
                 <button onClick={() => openModal(student)} className="text-muted hover:text-text transition-colors">
                   <Edit size={18} />
                 </button>
@@ -109,7 +109,7 @@ export default function ProgressPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={`${t('editProgressFor')} ${editingStudent?.name}`}
+        title={`${t('editProgressFor')} ${editingStudent?.username}`}
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
