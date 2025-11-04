@@ -29,7 +29,7 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 
 // FindUsersByRole retrieves users from the database filtered by role.
 func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([]models.User, error) {
-	rows, err := r.db.Query(ctx, "SELECT id, username, full_name, role, phone FROM users WHERE role=$1", role)
+	rows, err := r.db.Query(ctx, "SELECT id, username, COALESCE(full_name, username) AS full_name, role, phone FROM users WHERE role=$1", role)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (r *pgxUserRepository) DeleteUser(ctx context.Context, id int) error {
 // FindUserByUsername retrieves a single user by their username.
 func (r *pgxUserRepository) FindUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	err := r.db.QueryRow(ctx, "SELECT id, username, full_name, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.Username, &user.FullName, &user.Password, &user.Role, &user.Phone)
+	err := r.db.QueryRow(ctx, "SELECT id, username, COALESCE(full_name, username) AS full_name, password, role, phone FROM users WHERE username=$1", username).Scan(&user.ID, &user.Username, &user.FullName, &user.Password, &user.Role, &user.Phone)
 	if err != nil {
 		return nil, err
 	}

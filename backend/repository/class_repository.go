@@ -82,7 +82,7 @@ func (r *pgxClassRepository) Delete(ctx context.Context, id int) error {
 
 func (r *pgxClassRepository) FindStudentsByClassID(ctx context.Context, classID int) ([]models.StudentWithProgress, error) {
 	query := `
-		SELECT u.id, u.username, u.full_name, u.role, p.id, p.surah, p.ayah, p.page
+		SELECT u.id, u.username, COALESCE(u.full_name, u.username) AS full_name, u.role, p.id, p.surah, p.ayah, p.page
 		FROM users u
 		JOIN class_members cm ON u.id = cm.student_id
 		LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
@@ -122,7 +122,7 @@ func (r *pgxClassRepository) RemoveStudentFromClass(ctx context.Context, classID
 
 func (r *pgxClassRepository) FindStudentByClassAndStudentID(ctx context.Context, classID, studentID int) (*models.StudentWithProgress, error) {
 	query := `
-        SELECT u.id, u.username, u.full_name, u.role, p.id, p.surah, p.ayah, p.page
+        SELECT u.id, u.username, COALESCE(u.full_name, u.username) AS full_name, u.role, p.id, p.surah, p.ayah, p.page
         FROM users u
         JOIN class_members cm ON u.id = cm.student_id
         LEFT JOIN progress p ON u.id = p.student_id AND cm.class_id = p.class_id
