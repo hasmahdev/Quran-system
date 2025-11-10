@@ -22,7 +22,7 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch('https://qu.ghars.site/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

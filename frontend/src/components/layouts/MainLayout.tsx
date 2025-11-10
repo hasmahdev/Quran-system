@@ -13,13 +13,28 @@ interface DecodedToken {
   exp: number;
 }
 
-const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading?: boolean }) => {
+const navLinksConfig: any = {
+  developer: [
+    { to: '/Developer/teachers', text: 'teachers', icon: UserRoundCog },
+    { to: '/Developer/classes', text: 'classes', icon: BookCopy },
+    { to: '/Developer/students', text: 'students', icon: Users },
+    { to: '/Developer/progress', text: 'progress', icon: BarChart },
+  ],
+  teacher: [
+    { to: '/Teacher/classes', text: 'my_classes', icon: BookCopy },
+    { to: '/Teacher/progress', text: 'student_progress', icon: ClipboardList },
+  ],
+  student: [],
+};
+
+const MainLayout = ({ children, loading }: { children: React.ReactNode, loading?: boolean }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const { token, setToken } = useAuth();
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [navLinks, setNavLinks] = useState<any[]>([]);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMobileSidebarOpen(false);
@@ -36,29 +51,18 @@ const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading
     if (token) {
       try {
         const decodedToken = jwtDecode<DecodedToken>(token);
-        const role = decodedToken.role;
-        if (role === 'developer') {
-          setNavLinks([
-            { to: '/Developer/teachers', text: t('teachers'), icon: UserRoundCog },
-            { to: '/Developer/classes', text: t('classes'), icon: BookCopy },
-            { to: '/Developer/students', text: t('students'), icon: Users },
-            { to: '/Developer/progress', text: t('progress'), icon: BarChart },
-          ]);
-        } else if (role === 'teacher') {
-          setNavLinks([
-            { to: '/Teacher/classes', text: t('my_classes'), icon: BookCopy },
-            { to: '/Teacher/progress', text: t('student_progress'), icon: ClipboardList },
-          ]);
-        }
+        const userRole = decodedToken.role;
+        setRole(userRole);
+        setNavLinks(navLinksConfig[userRole] || []);
       } catch (error) {
         console.error('Invalid token:', error);
         setToken(null);
         router.push('/login');
       }
     } else {
-        router.push('/login');
+      router.push('/login');
     }
-  }, [t, token, router, setToken]);
+  }, [token, router, setToken]);
 
   const handleLogout = () => {
     setToken(null);
@@ -90,9 +94,9 @@ const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading
         <ul className="space-y-2">
           {navLinks.map((link) => (
             <li key={link.to}>
-              <Link href={link.to} className={getNavLinkClasses(isOpen)(link.to)} title={isOpen ? '' : link.text}>
+              <Link href={link.to} className={getNavLinkClasses(isOpen)(link.to)} title={isOpen ? '' : t(link.text)}>
                   <link.icon className={`h-5 w-5 ${isOpen ? 'ml-3' : ''}`} />
-                  <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{link.text}</span>
+                  <span className={`transition-opacity duration-200 whitespace-nowrap ${!isOpen ? 'hidden' : 'delay-200'}`}>{t(link.text)}</span>
               </Link>
             </li>
           ))}
@@ -110,22 +114,55 @@ const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading
     </div>
   );
 
+  const StudentHeader = () => (
+    <header className="sticky top-0 bg-background/80 backdrop-blur-lg border-b border-border p-4 flex items-center justify-between">
+      <div className="font-bold text-lg">{t('studentDashboard')}</div>
+      <div className="md:hidden">
+        <button onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} className="text-text">
+          <Menu size={24} />
+        </button>
+      </div>
+      <div className="hidden md:flex items-center space-x-4">
+        <button onClick={handleLogout} className="flex items-center text-sm font-medium text-muted hover:text-primary transition-colors duration-200">
+          <LogOut className="h-5 w-5 ml-2" />
+          <span>{t('logout')}</span>
+        </button>
+      </div>
+    </header>
+  );
+
+  if (role === 'student') {
+    return (
+      <div dir="rtl" className="flex flex-col h-screen bg-background text-text font-sans">
+        <StudentHeader />
+        {isMobileSidebarOpen && (
+          <div className="md:hidden bg-card border-b border-border p-4">
+            <button onClick={handleLogout} className="flex items-center w-full text-right py-2 text-sm font-medium text-muted hover:text-primary transition-colors duration-200">
+              <LogOut className="h-5 w-5 ml-3" />
+              <span>{t('logout')}</span>
+            </button>
+          </div>
+        )}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 animate-fade-in-up w-full">
+            {loading ? <div className="flex justify-center items-center h-full"><LoadingSpinner /></div> : children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div dir="rtl" className="flex h-screen bg-background text-text font-sans">
-      {/* Mobile Sidebar */}
       <div className={`md:hidden fixed inset-0 z-40 flex transition-opacity duration-300 ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <aside className={`w-64 bg-card border-l border-border rounded-l-2xl transition-transform duration-300 transform ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <SidebarContent isOpen={true} />
         </aside>
         <div onClick={() => setIsMobileSidebarOpen(false)} className="flex-1 bg-black/30 backdrop-blur-sm"></div>
       </div>
-
-      {/* Desktop Sidebar */}
       <aside className={`hidden md:flex md:flex-shrink-0 bg-card border-l border-border transition-all duration-300 ${isDesktopSidebarOpen ? 'w-64' : 'w-20'}`}>
         <SidebarContent isOpen={isDesktopSidebarOpen} />
       </aside>
-
-      {/* Main Content */}
       <div className="flex flex-col flex-1">
         <header className="sticky top-0 bg-background/80 backdrop-blur-lg border-b border-border p-4 flex items-center md:hidden">
           <button onClick={() => setIsMobileSidebarOpen(true)} className="text-text">
@@ -142,4 +179,4 @@ const AdminLayout = ({ children, loading }: { children: React.ReactNode, loading
   );
 };
 
-export default AdminLayout;
+export default MainLayout;

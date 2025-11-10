@@ -6,7 +6,7 @@ import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import AdminLayout from '@/components/layouts/AdminLayout';
+import MainLayout from '../../components/layouts/MainLayout';
 
 type Student = { id: string; username: string; progress_surah?: number | null; progress_ayah?: number | null; progress_page?: number | null };
 
@@ -70,7 +70,7 @@ export default function ProgressPage() {
   };
 
   return (
-    <AdminLayout>
+    <MainLayout>
       <h1 className="text-3xl font-bold text-text mb-8">{t('manageProgress')}</h1>
 
       <div className="mb-6">
@@ -140,6 +140,6 @@ export default function ProgressPage() {
           </div>
         </form>
       </Modal>
-    </AdminLayout>
+    </MainLayout>
   );
 }

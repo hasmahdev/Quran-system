@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import '../lib/i18n';
 import { AuthProvider } from '../context/AuthContext';
 import LogRocket from 'logrocket';
-import ErrorBoundary from '../components/debug/ErrorBoundary';
 
 if (typeof window !== 'undefined') {
   LogRocket.init('qk7sda/had');
@@ -20,9 +19,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <AuthProvider>
-      <ErrorBoundary>
-        <Component {...pageProps} />
-      </ErrorBoundary>
+      <Component {...pageProps} />
     </AuthProvider>
   );
 }

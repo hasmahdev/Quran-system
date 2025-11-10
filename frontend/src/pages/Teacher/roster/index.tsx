@@ -6,7 +6,7 @@ import { Plus, Trash2, User } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import withAuth from '../../../components/withAuth';
-import AdminLayout from '../../../components/layouts/AdminLayout';
+import MainLayout from '../../../components/layouts/MainLayout';
 
 const StudentRosterPage = () => {
   const { t } = useTranslation();
@@ -86,11 +86,11 @@ const StudentRosterPage = () => {
     student.username && student.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <AdminLayout><div>{t('loading')}</div></AdminLayout>;
-  if (error) return <AdminLayout><div className="text-red-600">{error}</div></AdminLayout>;
+  if (loading) return <MainLayout><div>{t('loading')}</div></MainLayout>;
+  if (error) return <MainLayout><div className="text-red-600">{error}</div></MainLayout>;
 
   return (
-    <AdminLayout>
+    <MainLayout>
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">{t('student_roster')}</h1>
@@ -151,7 +151,7 @@ const StudentRosterPage = () => {
         title={t('confirm_removal')}
         message={t('are_you_sure_remove_student')}
       />
-    </AdminLayout>
+    </MainLayout>
   );
 };
 

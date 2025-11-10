@@ -14,13 +14,13 @@ const withAuth = (WrappedComponent: React.ComponentType, allowedRoles: string[])
       }
 
       if (user && !allowedRoles.includes(user.role)) {
-        router.replace('/unauthorized'); // Or some other appropriate page
+        router.replace('/unauthorized');
         return;
       }
     }, [user, token, router]);
 
     if (!user || !allowedRoles.includes(user.role)) {
-      return null; // Or a loading spinner
+      return null;
     }
 
     return <WrappedComponent {...props} />;

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getUsersByRole, createUser, updateUser, deleteUser } from '../../../lib/api';
 import { formatProgress } from '../../../utils/quran';
-import AdminLayout from '../../../components/layouts/AdminLayout';
+import MainLayout from '../../../components/layouts/MainLayout';
 import Card from '../../../components/shared/Card';
 import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
@@ -73,7 +73,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     if (editingStudent && classes.length > 0) {
-      // Find the class the student is in
+
       const studentClass = classes.find((c) => {
         const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
         return studentIds.then(ids => ids.includes(editingStudent.id));
@@ -113,19 +113,19 @@ export default function StudentsPage() {
       if (editingStudent) {
         await updateUser(editingStudent.id, { username: studentData.username, phone: studentData.phone });
 
-        // Find the student's current class
+
         const currentClass = classes.find((c) => {
           const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
           return studentIds.then(ids => ids.includes(editingStudent.id));
         });
 
         if (currentClass && selectedClassToAssign && currentClass.id !== selectedClassToAssign.id) {
-          // Remove from old class
+
           await removeStudentFromClass(currentClass.id, editingStudent.id);
-          // Add to new class
+
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
         } else if (!currentClass && selectedClassToAssign) {
-          // Just add to new class
+
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
         }
       } else {
@@ -153,7 +153,7 @@ export default function StudentsPage() {
   };
 
   return (
-    <AdminLayout>
+    <MainLayout>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-text">{t('students')}</h1>
         <button
@@ -287,6 +287,6 @@ export default function StudentsPage() {
         title={t('deleteStudent')}
         message={t('confirmDelete')}
       />
-    </AdminLayout>
+    </MainLayout>
   );
 }

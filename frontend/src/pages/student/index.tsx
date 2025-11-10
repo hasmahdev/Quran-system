@@ -8,7 +8,7 @@ const StudentIndex = () => {
     router.replace('/student/progress');
   }, [router]);
 
-  return null; // Render nothing, as the redirect will happen client-side
+  return null;
 };
 
 export default StudentIndex;

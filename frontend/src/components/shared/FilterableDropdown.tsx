@@ -1,22 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 
-/**
- * A reusable filterable dropdown component.
- *
- * @param {object[]} items - Array of items to display in the dropdown.
- * @param {object} selectedItem - The currently selected item.
- * @param {function} onSelectItem - Callback function when an item is selected.
- * @param {string} label - The property to display for each item.
- * @param {string} [placeholder='Select an item'] - Placeholder text for the dropdown.
- * @param {boolean} [disabled=false] - Whether the dropdown is disabled.
- */
 const FilterableDropdown = ({ items, selectedItem, onSelectItem, label, placeholder = 'Select an item', disabled = false }: { items: any[], selectedItem: any, onSelectItem: (item: any) => void, label: string, placeholder?: string, disabled?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

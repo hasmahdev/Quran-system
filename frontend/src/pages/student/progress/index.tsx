@@ -5,7 +5,7 @@ import Card from '../../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import { getMyData } from '../../../lib/api';
 import withAuth from '../../../components/withAuth';
-import StudentLayout from '../../../components/layouts/StudentLayout';
+import MainLayout from '../../../components/layouts/MainLayout';
 import ErrorDisplay from '../../../components/ui/ErrorDisplay';
 
 function StudentDashboard() {
@@ -37,10 +37,10 @@ function StudentDashboard() {
     }
   }, [user, t]);
 
-  if (error) return <StudentLayout><ErrorDisplay message={error} /></StudentLayout>;
+  if (error) return <MainLayout><ErrorDisplay message={error} /></MainLayout>;
 
   return (
-    <StudentLayout loading={loading}>
+    <MainLayout loading={loading}>
       <div className="p-4">
         <h1 className="text-2xl font-bold text-text mb-6">{t('welcome_student', { name })}</h1>
         <Card className="w-full max-w-xl">
@@ -58,7 +58,7 @@ function StudentDashboard() {
           </div>
         </Card>
       </div>
-    </StudentLayout>
+    </MainLayout>
   );
 }
 

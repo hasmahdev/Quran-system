@@ -1,4 +1,4 @@
-const API_URL = 'https://qu.ghars.site/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://quran-project-a45j.onrender.com/api';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -13,14 +13,14 @@ const handleResponse = async (response: Response) => {
     const error = await response.json();
     throw new Error(error.error || 'API request failed');
   }
-  // For DELETE requests with no body
+
   if (response.status === 204) {
     return true;
   }
   return response.json();
 };
 
-// User Functions
+
 export const getUsersByRole = async (role: string) => {
   const response = await fetch(`${API_URL}/users?role=${role}`, {
     headers: getAuthHeaders(),
@@ -56,7 +56,7 @@ export const deleteUser = async (userId: string) => {
   return true;
 };
 
-// Student Functions
+
 export const getMyData = async () => {
     const response = await fetch(`${API_URL}/students/me`, {
         headers: getAuthHeaders(),
@@ -74,7 +74,7 @@ export const createStudentProgress = async (progressData: any) => {
     return handleResponse(response);
 };
 
-// Progress Functions
+
 export const getProgressForClass = async (classId: string) => {
     const response = await fetch(`${API_URL}/classes/${classId}/progress`, {
         headers: getAuthHeaders(),
@@ -92,7 +92,7 @@ export const updateStudentProgress = async (progressId: string, updates: any) =>
     return handleResponse(response);
 };
 
-// Class Member Functions
+
 export const getStudentsInClass = async (classId: string) => {
     const response = await fetch(`${API_URL}/classes/${classId}/students`, {
         headers: getAuthHeaders(),
@@ -118,7 +118,7 @@ export const removeStudentFromClass = async (classId: string, studentId: string)
     return true;
 };
 
-// Class Functions
+
 export const getClasses = async () => {
     const response = await fetch(`${API_URL}/classes`, {
         headers: getAuthHeaders(),

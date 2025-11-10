@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getClasses, getUsersByRole, createClass, updateClass, deleteClass } from '../../../lib/api';
-import { formatProgress } from '../../../utils/quran';
-import AdminLayout from '../../../components/layouts/AdminLayout';
+import { useState } from 'react';
+import { createClass, updateClass, deleteClass } from '../../../lib/api';
+import MainLayout from '../../../components/layouts/MainLayout';
 import Card from '../../../components/shared/Card';
 import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
@@ -9,59 +8,36 @@ import LoadingSpinner from '../../../components/shared/LoadingSpinner';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FilterableDropdown from '../../../components/shared/FilterableDropdown';
+import { useClasses } from '../../../hooks/useClasses';
 
 type Class = { id: string; name: string; teacher_id: string; };
 type Teacher = { id: string; username: string; };
 
 export default function ClassesPage() {
   const { t } = useTranslation();
-  const [items, setItems] = useState<Class[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    teachers,
+    loading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    selectedTeacher,
+    setSelectedTeacher,
+    filteredItems,
+    load,
+  } = useClasses();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '' });
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState<Class[]>([]);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const classData = await getClasses();
-      const teacherData = await getUsersByRole('teacher');
-      setItems(classData || []);
-      setTeachers(teacherData || []);
-    } catch (err: any) {
-      setError(err.message);
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  useEffect(() => {
-    let filtered = items;
-    if (selectedTeacher) {
-      filtered = filtered.filter((item) => item.teacher_id === selectedTeacher.id);
-    }
-    if (searchQuery) {
-      filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    setFilteredItems(filtered);
-  }, [selectedTeacher, searchQuery, items]);
+  const [modalSelectedTeacher, setModalSelectedTeacher] = useState<Teacher | null>(null);
 
   const openModal = (cls: Class | null = null) => {
     setEditingClass(cls);
     setFormData({ name: cls ? cls.name : '' });
-    setSelectedTeacher(cls ? teachers.find((t) => t.id === cls.teacher_id) || null : null);
+    setModalSelectedTeacher(cls ? teachers.find((t) => t.id === cls.teacher_id) || null : null);
     setIsModalOpen(true);
   };
 
@@ -86,11 +62,10 @@ export default function ClassesPage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     try {
       const classData = {
         ...formData,
-        teacher_id: selectedTeacher?.id,
+        teacher_id: modalSelectedTeacher?.id,
       };
       if (editingClass) {
         await updateClass(editingClass.id, classData);
@@ -116,7 +91,7 @@ export default function ClassesPage() {
   };
 
   return (
-    <AdminLayout>
+    <MainLayout>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-text">{t('classes')}</h1>
         <button
@@ -193,8 +168,8 @@ export default function ClassesPage() {
             <label htmlFor="teacher_id" className="block text-sm font-medium text-muted mb-2">{t('teacher')}</label>
             <FilterableDropdown
               items={teachers}
-              selectedItem={selectedTeacher}
-              onSelectItem={setSelectedTeacher}
+              selectedItem={modalSelectedTeacher}
+              onSelectItem={setModalSelectedTeacher}
               placeholder={t('selectTeacher')}
               label="username"
             />
@@ -218,6 +193,6 @@ export default function ClassesPage() {
         title={t('deleteClass')}
         message={t('confirmDelete')}
       />
-    </AdminLayout>
+    </MainLayout>
   );
 }

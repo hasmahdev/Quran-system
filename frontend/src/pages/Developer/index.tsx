@@ -8,7 +8,7 @@ const DeveloperIndex = () => {
     router.replace('/Developer/classes');
   }, [router]);
 
-  return null; // Render nothing, as the redirect will happen client-side
+  return null;
 };
 
 export default DeveloperIndex;

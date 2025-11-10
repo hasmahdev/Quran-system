@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getUsersByRole, createUser, updateUser, deleteUser } from '../../../lib/api';
 import { formatProgress } from '../../../utils/quran';
-import AdminLayout from '../../../components/layouts/AdminLayout';
+import MainLayout from '../../../components/layouts/MainLayout';
 import Card from '../../../components/shared/Card';
 import Modal from '../../../components/shared/Modal';
 import ConfirmationModal from '../../../components/shared/ConfirmationModal';
@@ -99,7 +99,7 @@ export default function TeachersPage() {
   };
 
   return (
-    <AdminLayout>
+    <MainLayout>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-text">{t('teachers')}</h1>
         <button
@@ -183,6 +183,6 @@ export default function TeachersPage() {
         title={t('deleteTeacher')}
         message={t('confirmDelete')}
       />
-    </AdminLayout>
+    </MainLayout>
   );
 }

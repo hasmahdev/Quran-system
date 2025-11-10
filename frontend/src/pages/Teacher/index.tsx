@@ -8,7 +8,7 @@ const TeacherIndex = () => {
     router.replace('/Teacher/classes');
   }, [router]);
 
-  return null; // Render nothing, as the redirect will happen client-side
+  return null;
 };
 
 export default TeacherIndex;
