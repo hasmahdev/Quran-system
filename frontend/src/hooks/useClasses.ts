@@ -48,6 +48,7 @@ export const useClasses = () => {
     teachers,
     loading,
     error,
+    setError,
     searchQuery,
     setSearchQuery,
     selectedTeacher,

@@ -19,6 +19,7 @@ export default function ClassesPage() {
     teachers,
     loading,
     error,
+    setError,
     searchQuery,
     setSearchQuery,
     selectedTeacher,
