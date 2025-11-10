@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"strconv"
+	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/kolind-am/quran-project/backend/models"
@@ -30,11 +31,9 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 // FindUsersByRole retrieves users from the database filtered by role.
 func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([]models.User, error) {
 	query := `
-		SELECT u.id, u.username, u.role, u.phone, c.id, c.name, c.teacher_id
-		FROM users u
-		LEFT JOIN class_members cm ON u.id = cm.student_id
-		LEFT JOIN classes c ON cm.class_id = c.id
-		WHERE u.role = $1
+		SELECT id, username, role, phone, progress_surah, progress_ayah, progress_page
+		FROM users
+		WHERE role = $1
 	`
 	rows, err := r.db.Query(ctx, query, role)
 	if err != nil {
@@ -42,31 +41,13 @@ func (r *pgxUserRepository) FindUsersByRole(ctx context.Context, role string) ([
 	}
 	defer rows.Close()
 
-	userMap := make(map[int]*models.User)
+	var users []models.User
 	for rows.Next() {
 		var user models.User
-		var class models.Class
-		var classId, teacherId *int
-		var className *string
-		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone, &classId, &className, &teacherId); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.Role, &user.Phone, &user.ProgressSurah, &user.ProgressAyah, &user.ProgressPage); err != nil {
 			return nil, err
 		}
-
-		if _, ok := userMap[user.ID]; !ok {
-			userMap[user.ID] = &user
-		}
-
-		if classId != nil {
-			class.ID = *classId
-			class.Name = *className
-			class.TeacherID = *teacherId
-			userMap[user.ID].Classes = append(userMap[user.ID].Classes, class)
-		}
-	}
-
-	var users []models.User
-	for _, user := range userMap {
-		users = append(users, *user)
+		users = append(users, user)
 	}
 
 	return users, nil
@@ -80,40 +61,62 @@ func (r *pgxUserRepository) CreateUser(ctx context.Context, user *models.User) e
 
 // UpdateUser updates an existing user in the database.
 func (r *pgxUserRepository) UpdateUser(ctx context.Context, id int, user *models.User) (*models.User, error) {
-	// Start building the query
-	query := "UPDATE users SET"
+	var setClauses []string
 	var args []interface{}
 	argId := 1
 
 	if user.Username != "" {
-		query += " username=$" + strconv.Itoa(argId)
+		setClauses = append(setClauses, fmt.Sprintf("username=$%d", argId))
 		args = append(args, user.Username)
 		argId++
 	}
-
 	if user.Role != "" {
-		query += ", role=$" + strconv.Itoa(argId)
+		setClauses = append(setClauses, fmt.Sprintf("role=$%d", argId))
 		args = append(args, user.Role)
 		argId++
 	}
-
 	if user.Phone != nil {
-		query += ", phone=$" + strconv.Itoa(argId)
+		setClauses = append(setClauses, fmt.Sprintf("phone=$%d", argId))
 		args = append(args, *user.Phone)
 		argId++
 	}
-
 	if user.Password != "" {
-		query += ", password=$" + strconv.Itoa(argId)
+		setClauses = append(setClauses, fmt.Sprintf("password=$%d", argId))
 		args = append(args, user.Password)
 		argId++
 	}
+	if user.ProgressSurah != nil {
+		setClauses = append(setClauses, fmt.Sprintf("progress_surah=$%d", argId))
+		args = append(args, *user.ProgressSurah)
+		argId++
+	}
+	if user.ProgressAyah != nil {
+		setClauses = append(setClauses, fmt.Sprintf("progress_ayah=$%d", argId))
+		args = append(args, *user.ProgressAyah)
+		argId++
+	}
+	if user.ProgressPage != nil {
+		setClauses = append(setClauses, fmt.Sprintf("progress_page=$%d", argId))
+		args = append(args, *user.ProgressPage)
+		argId++
+	}
 
-	query += " WHERE id=$" + strconv.Itoa(argId) + " RETURNING id, username, role, phone"
+	// Only proceed if there are fields to update
+	if len(setClauses) == 0 {
+		// No fields to update, so just fetch and return the current user data
+		updatedUser := &models.User{}
+		err := r.db.QueryRow(ctx, "SELECT id, username, role, phone, progress_surah, progress_ayah, progress_page FROM users WHERE id=$1", id).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone, &updatedUser.ProgressSurah, &updatedUser.ProgressAyah, &updatedUser.ProgressPage)
+		if err != nil {
+			return nil, err
+		}
+		return updatedUser, nil
+	}
+
+	query := fmt.Sprintf("UPDATE users SET %s WHERE id=$%d RETURNING id, username, role, phone, progress_surah, progress_ayah, progress_page", strings.Join(setClauses, ", "), argId)
 	args = append(args, id)
 
 	updatedUser := &models.User{}
-	err := r.db.QueryRow(ctx, query, args...).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone)
+	err := r.db.QueryRow(ctx, query, args...).Scan(&updatedUser.ID, &updatedUser.Username, &updatedUser.Role, &updatedUser.Phone, &updatedUser.ProgressSurah, &updatedUser.ProgressAyah, &updatedUser.ProgressPage)
 	if err != nil {
 		return nil, err
 	}

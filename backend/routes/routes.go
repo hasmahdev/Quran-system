@@ -16,21 +16,15 @@ func SetupRoutes(app *fiber.App, jwtSecret string) {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(database.DB)
-	classRepo := repository.NewClassRepository(database.DB)
-	progressRepo := repository.NewProgressRepository(database.DB)
 	studentRepo := repository.NewStudentRepository(database.DB)
 
 	// Initialize services
 	userService := services.NewUserService(userRepo)
-	classService := services.NewClassService(classRepo, progressRepo)
-	progressService := services.NewProgressService(progressRepo)
 	studentService := services.NewStudentService(studentRepo)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(userRepo, jwtSecret)
 	userHandler := handlers.NewUserHandler(userService)
-	classHandler := handlers.NewClassHandler(classService)
-	progressHandler := handlers.NewProgressHandler(progressService)
 	studentHandler := handlers.NewStudentHandler(studentService)
 
 	// Public routes
@@ -47,23 +41,6 @@ func SetupRoutes(app *fiber.App, jwtSecret string) {
 	api.Post("/users", userHandler.CreateUser)
 	api.Put("/users/:userId", userHandler.UpdateUser)
 	api.Delete("/users/:userId", userHandler.DeleteUser)
-
-	// Class Management
-	api.Get("/classes", classHandler.GetClasses)
-	api.Get("/teachers/:teacherId/classes", classHandler.GetTeacherClasses)
-	api.Post("/classes", classHandler.CreateClass)
-	api.Put("/classes/:classId", classHandler.UpdateClass)
-	api.Delete("/classes/:classId", classHandler.DeleteClass)
-
-	// Class Member Management
-	api.Get("/classes/:classId/students", classHandler.GetClassStudents)
-	api.Post("/classes/:classId/students", classHandler.AddClassStudent)
-	api.Delete("/classes/:classId/students/:studentId", classHandler.RemoveClassStudent)
-
-	// Progress Management
-	api.Get("/classes/:classId/progress", progressHandler.GetClassProgress)
-	api.Post("/progress", progressHandler.CreateProgress)
-	api.Put("/progress/:progressId", progressHandler.UpdateProgress)
 
 	// Student Management
 	api.Get("/students/me", studentHandler.GetMyData)

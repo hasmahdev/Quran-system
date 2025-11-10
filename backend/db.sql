@@ -4,7 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('developer', 'admin', 'user', 'teacher', 'student')),
-    phone TEXT
+    phone TEXT,
+    progress_surah INTEGER,
+    progress_ayah INTEGER,
+    progress_page INTEGER
 );
 
 -- Insert the developer user if they don't exist, or update their password if they do.
@@ -29,15 +32,3 @@ CREATE TABLE IF NOT EXISTS class_members (
 );
 
 -- Create the progress table if it doesn't already exist
-CREATE TABLE IF NOT EXISTS progress (
-    id SERIAL PRIMARY KEY,
-    student_id INTEGER NOT NULL,
-    class_id INTEGER NOT NULL,
-    surah INTEGER,
-    ayah INTEGER,
-    page INTEGER,
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_by INTEGER NOT NULL REFERENCES users(id),
-    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
-);
