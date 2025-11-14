@@ -72,12 +72,10 @@ export default function StudentsPage() {
   };
 
   useEffect(() => {
-    if (editingStudent && classes.length > 0) {
-
-      const studentClass = classes.find((c) => {
-        const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
-        return studentIds.then(ids => ids.includes(editingStudent.id));
-      });
+    if (editingStudent) {
+      const studentClass = editingStudent.classes && editingStudent.classes.length > 0
+        ? classes.find(c => c.id === editingStudent.classes![0].id)
+        : null;
       setSelectedClassToAssign(studentClass || null);
     }
   }, [editingStudent, classes]);
@@ -113,20 +111,15 @@ export default function StudentsPage() {
       if (editingStudent) {
         await updateUser(editingStudent.id, { username: studentData.username, phone: studentData.phone });
 
-
-        const currentClass = classes.find((c) => {
-          const studentIds = getStudentsInClass(c.id).then(res => res.map((s: any) => s.id));
-          return studentIds.then(ids => ids.includes(editingStudent.id));
-        });
+        const currentClass = editingStudent.classes && editingStudent.classes.length > 0 ? editingStudent.classes[0] : null;
 
         if (currentClass && selectedClassToAssign && currentClass.id !== selectedClassToAssign.id) {
-
           await removeStudentFromClass(currentClass.id, editingStudent.id);
-
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
         } else if (!currentClass && selectedClassToAssign) {
-
           await addStudentToClass(selectedClassToAssign.id, editingStudent.id);
+        } else if (currentClass && !selectedClassToAssign) {
+          await removeStudentFromClass(currentClass.id, editingStudent.id);
         }
       } else {
         const newUser = await createUser(studentData);
