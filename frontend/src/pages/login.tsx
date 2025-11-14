@@ -57,8 +57,13 @@ export default function LoginPage() {
         }
 
       } else {
-        const errorData = await response.json().catch(() => response.text());
-        console.error('Login failed with status:', response.status, 'Response:', errorData);
+        const errorText = await response.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error('Login failed with status:', response.status, 'Response:', errorJson);
+        } catch (e) {
+          console.error('Login failed with status:', response.status, 'Response:', errorText);
+        }
         setError(t('incorrectCredentials'));
       }
     } catch (err: any) {
