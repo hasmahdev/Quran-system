@@ -31,17 +31,22 @@ func SetupRoutes(app *fiber.App, jwtSecret string) {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
-	app.Post("/login", authHandler.Login)
 
-	// API group with JWT middleware
-	api := app.Group("/api", middleware.Protected(jwtSecret))
+	// API group
+	api := app.Group("/api")
+
+	// Public API routes
+	api.Post("/login", authHandler.Login)
+
+	// Protected routes
+	protected := api.Group("/", middleware.Protected(jwtSecret))
 
 	// User Management
-	api.Get("/users", userHandler.GetUsers)
-	api.Post("/users", userHandler.CreateUser)
-	api.Put("/users/:userId", userHandler.UpdateUser)
-	api.Delete("/users/:userId", userHandler.DeleteUser)
+	protected.Get("/users", userHandler.GetUsers)
+	protected.Post("/users", userHandler.CreateUser)
+	protected.Put("/users/:userId", userHandler.UpdateUser)
+	protected.Delete("/users/:userId", userHandler.DeleteUser)
 
 	// Student Management
-	api.Get("/students/me", studentHandler.GetMyData)
+	protected.Get("/students/me", studentHandler.GetMyData)
 }
